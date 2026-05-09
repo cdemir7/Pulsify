@@ -1,0 +1,71 @@
+# ──────────────────────────────────────────────
+# Pulsify — KOBİ AI Asistanı
+# Tüm proje bağımlılıkları
+#
+# [BACKEND]  pip install -r requirements.txt
+# [FRONTEND] cd frontend && npm install
+# ──────────────────────────────────────────────
+
+# Web Framework
+fastapi==0.115.12
+uvicorn[standard]==0.34.2
+
+# Database — Motor (async MongoDB driver)
+# CLAUDE.md: PyMongo değil, Motor kullanılacak
+motor==3.7.0
+pymongo==4.12.1
+
+# Config & Validation
+pydantic==2.11.4
+pydantic-settings==2.9.1
+
+# AI — Google Gemini
+google-generativeai==0.8.5
+
+# Rate Limiting (Güvenlik — CLAUDE.md §9)
+slowapi==0.1.9
+
+# Async HTTP Client
+httpx==0.28.1
+
+# Environment Variables
+python-dotenv==1.1.0
+
+# Testing
+pytest==8.3.5
+pytest-asyncio==0.26.0
+
+# ──────────────────────────────────────────────
+# FRONTEND — npm ile kurulur (pip ile değil)
+# Kurulum: cd frontend && npm install
+# ──────────────────────────────────────────────
+
+# Core
+# react@^18.3.1
+# react-dom@^18.3.1
+# typescript@^5.6.3
+
+# Build & Dev Server
+# vite@^6.0.3
+# @vitejs/plugin-react@^4.3.4
+
+# Styling
+# tailwindcss@^3.4.17
+# autoprefixer@^10.4.20
+# postcss@^8.5.1
+
+# Routing
+# react-router-dom@^7.1.1
+
+# State Management
+# zustand@^5.0.3
+
+# HTTP Client
+# axios@^1.7.9
+
+# UI Bileşenleri
+# lucide-react@^0.469.0
+
+# TypeScript Tip Tanımlamaları
+# @types/react@^18.3.18
+# @types/react-dom@^18.3.5
