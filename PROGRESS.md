@@ -58,7 +58,7 @@
 
 | Faz | Durum | İlerleme |
 |---|---|---|
-| Faz 0: Altyapı | ⏳ Devam ediyor | 8/9 |
+| Faz 0: Altyapı | ⏳ Devam ediyor | 9/9 |
 | Faz 1: Backend Temeli | ⬜ Başlamadı | 0/12 |
 | Faz 2: Frontend Temeli | 🟡 Kısmi (UI sayfaları var) | 4/14 |
 | Faz 3: Core Features | ⬜ Başlamadı | 0/15 |
@@ -80,7 +80,7 @@
 - [x] `CLAUDE.md` proje context dosyası oluşturuldu
 - [x] `requirements.txt` ana dizinde oluşturuldu (Backend + Frontend referansları)
 - [x] `README.md` oluşturuldu (proje açıklaması, kurulum, kullanım)
-- [ ] `LICENSE` dosyası eklendi
+- [x] `LICENSE` dosyası eklendi
 
 ### Adım 0.2 — Geliştirme Ortamı
 - [x] Python sanal ortamı (`.venv`) oluşturuldu
