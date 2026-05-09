@@ -58,7 +58,7 @@
 
 | Faz | Durum | İlerleme |
 |---|---|---|
-| Faz 0: Altyapı | ⏳ Devam ediyor | 2/8 |
+| Faz 0: Altyapı | ⏳ Devam ediyor | 8/9 |
 | Faz 1: Backend Temeli | ⬜ Başlamadı | 0/12 |
 | Faz 2: Frontend Temeli | 🟡 Kısmi (UI sayfaları var) | 4/14 |
 | Faz 3: Core Features | ⬜ Başlamadı | 0/15 |
@@ -79,19 +79,14 @@
 - [x] `.gitignore` Python + Node + IDE için yapılandırıldı
 - [x] `CLAUDE.md` proje context dosyası oluşturuldu
 - [x] `requirements.txt` ana dizinde oluşturuldu (Backend + Frontend referansları)
-- [ ] `README.md` oluşturuldu (proje açıklaması, kurulum, kullanım)
+- [x] `README.md` oluşturuldu (proje açıklaması, kurulum, kullanım)
 - [ ] `LICENSE` dosyası eklendi
 
 ### Adım 0.2 — Geliştirme Ortamı
 - [x] Python sanal ortamı (`.venv`) oluşturuldu
-- [ ] `requirements.txt` ile bağımlılıklar kuruldu (`pip install -r requirements.txt`)
-- [ ] `frontend/` klasörü ve `package.json` oluşturuldu
-- [ ] Node bağımlılıkları kuruldu (`npm install`)
-
-### Adım 0.3 — Git Workflow
-- [ ] `develop` branch'i oluşturuldu ve korumaya alındı
-- [ ] Branch protection rules tanımlandı (main: PR gerekli, develop: PR gerekli)
-- [ ] Commit convention dokümante edildi (CLAUDE.md §13)
+- [x] `requirements.txt` ile bağımlılıklar kuruldu (`pip install -r requirements.txt`)
+- [x] `frontend/` klasörü ve `package.json` oluşturuldu
+- [x] Node bağımlılıkları kuruldu (`npm install`)
 
 ---
 
@@ -329,6 +324,7 @@
 | Tarih | Değişiklik | Not |
 |---|---|---|
 | 2026-05-09 | PROGRESS.md ilk sürüm | CLAUDE.md analizine göre faz/adım yapısı kuruldu |
+| 2026-05-09 | README.md oluşturuldu | Modern, badge'li, ekran görüntüsü placeholder'lı yapı |
 
 ---
 
