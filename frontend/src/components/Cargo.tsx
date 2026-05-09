@@ -1,11 +1,12 @@
 import { useState } from "react";
- 
+import Sidebar from './Sidebar'
+
 const delayedCargos = [
   { tracking: "TRK884521", customer: "Ahmet Yılmaz", initials: "AY", avatarColor: "rgba(239,68,68,0.15)", avatarText: "#EF4444", expected: "7 May", delay: "2 gün", delayLevel: "high", sentiment: "😠", notified: false },
   { tracking: "TRK990341", customer: "Zeynep Arslan", initials: "ZA", avatarColor: "rgba(245,158,11,0.15)", avatarText: "#F59E0B", expected: "6 May", delay: "3 gün", delayLevel: "high", sentiment: "😠", notified: true  },
   { tracking: "TRK551872", customer: "Murat Kılıç",  initials: "MK", avatarColor: "rgba(107,114,128,0.15)",avatarText: "#8B8B9E", expected: "8 May", delay: "1 gün", delayLevel: "mid",  sentiment: "😐", notified: false },
 ];
- 
+
 const timeline = [
   { dot: "bg-red-500",     title: "TRK884521 gecikiyor",    sub: "Ahmet Yılmaz · 2 gün geç",         time: "Bugün, 08:42" },
   { dot: "bg-red-500",     title: "TRK990341 gecikiyor",    sub: "Zeynep Arslan · Bildirim gönderildi", time: "Bugün, 07:15" },
@@ -13,7 +14,7 @@ const timeline = [
   { dot: "bg-amber-500",   title: "TRK551872 risk altında", sub: "Murat Kılıç · 1 gün geç",          time: "Dün, 18:00"   },
   { dot: "bg-emerald-500", title: "TRK661209 teslim edildi",sub: "Mehmet Şahin · Zamanında",         time: "Dün, 14:22"   },
 ];
- 
+
 const dailyReport = [
   { icon: "📦", label: "Toplam kargo",       value: "128", color: "#F1F1F5"  },
   { icon: "✅", label: "Teslim edildi",       value: "78",  color: "#10B981"  },
@@ -21,67 +22,26 @@ const dailyReport = [
   { icon: "🚚", label: "Yolda",              value: "47",  color: "#6366F1"  },
   { icon: "🔔", label: "Bildirim gönderildi", value: "1",   color: "#F59E0B"  },
 ];
- 
+
 export default function Cargo() {
   const [notifiedList, setNotifiedList] = useState<string[]>(["TRK990341"]);
   const [aiDismissed, setAiDismissed] = useState(false);
   const [allNotified, setAllNotified] = useState(false);
- 
+
   const handleNotify = (tracking: string) => {
     setNotifiedList((prev) => [...prev, tracking]);
   };
- 
+
   const handleNotifyAll = () => {
     setNotifiedList(delayedCargos.map((c) => c.tracking));
     setAllNotified(true);
     setAiDismissed(true);
   };
- 
+
   return (
     <div className="flex min-h-screen" style={{ background: "#0A0A0F", fontFamily: "'Plus Jakarta Sans', sans-serif", color: "#F1F1F5" }}>
-      {/* Sidebar */}
-      <aside className="flex flex-col w-56 shrink-0" style={{ background: "#0D0D14", borderRight: "1px solid #1E1E2E" }}>
-        <div className="flex items-center gap-3 px-5 py-5" style={{ borderBottom: "1px solid #1E1E2E" }}>
-          <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-indigo-500">
-            <span className="text-white font-bold text-sm">P</span>
-          </div>
-          <span className="font-bold text-base tracking-tight">Pulsify</span>
-        </div>
-        <nav className="flex flex-col gap-0.5 flex-1 px-2.5 py-3">
-          <p className="text-[10px] font-semibold uppercase tracking-widest px-2 pt-2 pb-1.5" style={{ color: "#4A4A5E" }}>Ana Menü</p>
-          {[
-            { label: "Dashboard",  icon: "▦",  active: false, badge: null },
-            { label: "AI Asistan", icon: "🤖", active: false, badge: "3"  },
-            { label: "Siparişler", icon: "📦", active: false, badge: null },
-            { label: "Kargo",      icon: "🚚", active: true,  badge: "!"  },
-            { label: "Müşteriler", icon: "👥", active: false, badge: null },
-          ].map((item) => (
-            <div key={item.label} className={`flex items-center gap-2.5 px-2.5 py-2 rounded-lg cursor-pointer text-[13px] transition-all ${item.active ? "bg-red-500/12 text-red-400 font-semibold" : "text-[#8B8B9E] hover:bg-white/5 hover:text-white"}`}>
-              <span>{item.icon}</span>
-              <span className="flex-1">{item.label}</span>
-              {item.badge && <span className="text-[10px] font-bold bg-red-500 text-white px-1.5 py-0.5 rounded-full">{item.badge}</span>}
-            </div>
-          ))}
-          <p className="text-[10px] font-semibold uppercase tracking-widest px-2 pt-4 pb-1.5" style={{ color: "#4A4A5E" }}>Sistem</p>
-          {["Raporlar", "Ayarlar"].map((label) => (
-            <div key={label} className="flex items-center gap-2.5 px-2.5 py-2 rounded-lg cursor-pointer text-[13px] text-[#8B8B9E] hover:bg-white/5 hover:text-white transition-all">
-              <span>{label === "Raporlar" ? "📊" : "⚙️"}</span>
-              <span>{label}</span>
-            </div>
-          ))}
-        </nav>
-        <div className="px-2.5 py-3" style={{ borderTop: "1px solid #1E1E2E" }}>
-          <div className="flex items-center gap-2.5 px-2.5 py-2 rounded-lg">
-            <div className="flex items-center justify-center w-8 h-8 rounded-full bg-gradient-to-br from-indigo-500 to-violet-500 text-white text-[11px] font-bold shrink-0">DK</div>
-            <div className="flex-1 min-w-0">
-              <p className="text-xs font-semibold text-white">Duru K.</p>
-              <p className="text-[11px]" style={{ color: "#4A4A5E" }}>Yönetici</p>
-            </div>
-            <span style={{ color: "#4A4A5E" }}>···</span>
-          </div>
-        </div>
-      </aside>
- 
+      <Sidebar />
+
       {/* Main */}
       <main className="flex flex-col flex-1 overflow-hidden">
         {/* Topbar */}
@@ -95,9 +55,9 @@ export default function Cargo() {
             <div className="flex items-center justify-center w-9 h-9 rounded-full bg-gradient-to-br from-indigo-500 to-violet-500 text-white text-xs font-bold">DK</div>
           </div>
         </div>
- 
+
         <div className="flex-1 overflow-y-auto px-6 py-5 flex flex-col gap-4">
- 
+
           {/* Alert Bar */}
           <div className="flex items-center gap-4 px-5 py-4 rounded-xl" style={{ background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.25)" }}>
             <div className="flex items-center justify-center w-9 h-9 rounded-xl shrink-0 text-red-400 text-lg animate-pulse" style={{ background: "rgba(239,68,68,0.15)" }}>⚠️</div>
@@ -114,7 +74,7 @@ export default function Cargo() {
               </button>
             </div>
           </div>
- 
+
           {/* Stats */}
           <div className="grid grid-cols-4 gap-3">
             {[
@@ -133,7 +93,7 @@ export default function Cargo() {
               </div>
             ))}
           </div>
- 
+
           {/* Main Grid */}
           <div className="grid gap-4" style={{ gridTemplateColumns: "1fr 280px" }}>
             <div className="flex flex-col gap-4">
@@ -193,7 +153,7 @@ export default function Cargo() {
                   </tbody>
                 </table>
               </div>
- 
+
               {/* AI Card */}
               {!aiDismissed && (
                 <div className="rounded-xl overflow-hidden" style={{ background: "#0F0F1A", border: "1px solid rgba(99,102,241,0.25)" }}>
@@ -218,7 +178,7 @@ export default function Cargo() {
                 </div>
               )}
             </div>
- 
+
             {/* Right Panel */}
             <div className="flex flex-col gap-4">
               {/* Timeline */}
@@ -242,7 +202,7 @@ export default function Cargo() {
                   ))}
                 </div>
               </div>
- 
+
               {/* Daily Report */}
               <div className="rounded-xl overflow-hidden" style={{ background: "#111118", border: "1px solid #1E1E2E" }}>
                 <div className="flex items-center justify-between px-5 py-3.5" style={{ borderBottom: "1px solid #1E1E2E" }}>
