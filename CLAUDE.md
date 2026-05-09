@@ -71,8 +71,8 @@ ve operasyon süreçlerini AI destekli otomasyon ile yönetmesini sağlayan mode
                         │ HTTPS / REST
 ┌───────────────────────▼─────────────────────────────────┐
 │                      API LAYER                          │
-│                   Flask (Python)                        │
-│              REST API + Blueprint Router                │
+│                   FastAPI (Python)                      │
+│              REST API + APIRouter                       │
 └──────┬──────────────────────────┬───────────────────────┘
        │                          │
 ┌──────▼──────┐          ┌────────▼────────┐
@@ -83,12 +83,12 @@ ve operasyon süreçlerini AI destekli otomasyon ile yönetmesini sağlayan mode
 
 ### Katman Sorumlulukları
 - **Frontend**: UI render, kullanıcı etkileşimi, state yönetimi
-- **Flask API**: İş mantığı, doğrulama, yönlendirme, AI orchestration
+- **FastAPI**: İş mantığı, doğrulama, yönlendirme, AI orchestration
 - **MongoDB**: Kalıcı veri depolama, sorgulama
 - **Gemini API**: NLP, duygu analizi, rapor üretimi, intent recognition
 
 ### Mimari Kararların Gerekçeleri
-- **Flask** seçildi çünkü: Hafif, hızlı prototipleme, Python ekosistemi ile uyumlu, Gemini SDK doğrudan destekli
+- **FastAPI** seçildi çünkü: Async-native, otomatik Swagger dokümantasyonu, Pydantic ile tip güvenliği, yüksek performans, Gemini SDK uyumlu
 - **MongoDB** seçildi çünkü: Sipariş/müşteri veri yapıları schema-flexible, NoSQL ölçeklenme avantajlı, JSON-native
 - **React** seçildi çünkü: Component reusability, geniş ekosistem, TypeScript desteği
 - **Gemini API** seçildi çünkü: Türkçe dil desteği güçlü, maliyet avantajlı, Google altyapısı
@@ -190,32 +190,20 @@ React Router v6 kullan:
 ```
 backend/
 ├── app/
-│   ├── __init__.py           # Flask app factory
+│   ├── __init__.py           # FastAPI app factory
 │   ├── config.py             # Ortam bazlı konfigürasyon
-│   ├── extensions.py         # PyMongo, CORS vb. init
-│   ├── blueprints/           # Route grupları
-│   │   ├── orders/
-│   │   │   ├── __init__.py
-│   │   │   ├── routes.py
-│   │   │   └── schemas.py
-│   │   ├── customers/
-│   │   │   ├── __init__.py
-│   │   │   ├── routes.py
-│   │   │   └── schemas.py
-│   │   ├── cargo/
-│   │   │   ├── __init__.py
-│   │   │   ├── routes.py
-│   │   │   └── schemas.py
-│   │   └── ai/
-│   │       ├── __init__.py
-│   │       ├── routes.py
-│   │       └── schemas.py
+│   ├── database.py           # Motor (async MongoDB) bağlantısı
+│   ├── routers/              # Route grupları (APIRouter)
+│   │   ├── orders.py
+│   │   ├── customers.py
+│   │   ├── cargo.py
+│   │   └── ai.py
 │   ├── services/             # İş mantığı katmanı
 │   │   ├── order_service.py
 │   │   ├── customer_service.py
 │   │   ├── cargo_service.py
 │   │   └── ai_service.py
-│   ├── models/               # MongoDB collection şemaları (Pydantic)
+│   ├── models/               # Pydantic modelleri (request/response şemaları)
 │   │   ├── order.py
 │   │   ├── customer.py
 │   │   └── product.py
@@ -230,58 +218,62 @@ backend/
 ├── .env
 ├── .env.example
 ├── requirements.txt
-├── run.py
+├── main.py
 └── Procfile                  # Render/Railway deployment
 ```
 
-### Flask App Factory
+### FastAPI App Factory
 
 ```python
-# app/__init__.py
-from flask import Flask
-from flask_cors import CORS
-from app.extensions import mongo
-from app.blueprints.orders import orders_bp
-from app.blueprints.customers import customers_bp
-from app.blueprints.cargo import cargo_bp
-from app.blueprints.ai import ai_bp
+# main.py
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+from app.routers import orders, customers, cargo, ai
+from app.config import settings
 
-def create_app(config_name="development"):
-    app = Flask(__name__)
-    app.config.from_object(config[config_name])
+def create_app() -> FastAPI:
+    app = FastAPI(
+        title="Pulsify API",
+        description="KOBİ AI Asistanı Backend",
+        version="1.0.0"
+    )
 
-    CORS(app, resources={r"/api/*": {"origins": "*"}})
-    mongo.init_app(app)
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=settings.CORS_ORIGINS,
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
 
-    app.register_blueprint(orders_bp, url_prefix="/api/orders")
-    app.register_blueprint(customers_bp, url_prefix="/api/customers")
-    app.register_blueprint(cargo_bp, url_prefix="/api/cargo")
-    app.register_blueprint(ai_bp, url_prefix="/api/ai")
+    app.include_router(orders.router, prefix="/api/orders", tags=["orders"])
+    app.include_router(customers.router, prefix="/api/customers", tags=["customers"])
+    app.include_router(cargo.router, prefix="/api/cargo", tags=["cargo"])
+    app.include_router(ai.router, prefix="/api/ai", tags=["ai"])
 
     return app
+
+app = create_app()
 ```
 
 ### Konfigürasyon Yönetimi
 
 ```python
 # app/config.py
-import os
+from pydantic_settings import BaseSettings
+from typing import List
 
-class Config:
-    MONGO_URI = os.getenv("MONGO_URI")
-    GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
-    SECRET_KEY = os.getenv("SECRET_KEY", "dev-secret")
+class Settings(BaseSettings):
+    MONGO_URI: str
+    GEMINI_API_KEY: str
+    SECRET_KEY: str = "dev-secret"
+    CORS_ORIGINS: List[str] = ["http://localhost:5173"]
+    DEBUG: bool = False
 
-class DevelopmentConfig(Config):
-    DEBUG = True
+    class Config:
+        env_file = ".env"
 
-class ProductionConfig(Config):
-    DEBUG = False
-
-config = {
-    "development": DevelopmentConfig,
-    "production": ProductionConfig,
-}
+settings = Settings()
 ```
 
 ---
@@ -608,7 +600,7 @@ Log seviyeleri:
 - **API key'ler asla frontend'de olmaz** — tüm Gemini çağrıları backend üzerinden
 - **`.env` dosyaları asla commit'lenmez** — `.gitignore`'a ekle
 - **CORS** sadece izinli origin'lere açık olmalı (production'da wildcard `*` yasak)
-- **Input validation** her endpoint'te zorunlu (Marshmallow veya Pydantic ile)
+- **Input validation** her endpoint'te zorunlu (Pydantic modelleri ile — FastAPI'de otomatik)
 - **MongoDB injection** önlemi: parametrik sorgular kullan, string concat etme
 
 ### `.gitignore` — Mutlaka Olması Gerekenler
@@ -636,7 +628,7 @@ dist/
 - [ ] CORS `CORS_ORIGINS` environment variable'dan oku
 - [ ] MongoDB URI'da authentication zorunlu
 - [ ] HTTPS zorunlu (Vercel ve Render varsayılan olarak sağlar)
-- [ ] Rate limiting ekle (Flask-Limiter)
+- [ ] Rate limiting ekle (slowapi)
 
 ---
 
@@ -646,19 +638,19 @@ dist/
 | Katman | Platform | Neden |
 |---|---|---|
 | Frontend | Vercel | Otomatik CI/CD, ücretsiz tier, hızlı CDN |
-| Backend | Render / Railway | Flask desteği, env variable yönetimi, ücretsiz tier |
+| Backend | Render / Railway | FastAPI desteği, env variable yönetimi, ücretsiz tier |
 | Database | MongoDB Atlas | Yönetilen servis, ücretsiz 512MB tier, cloud-native |
 
 ### Environment Yapısı
 ```
-development  → local (localhost:5000 + localhost:5173)
+development  → local (localhost:8000 + localhost:5173)
 production   → Vercel (frontend) + Render (backend) + Atlas (DB)
 ```
 
 ### Deployment Adımları
 
 **Backend (Render):**
-1. `Procfile` oluştur: `web: gunicorn run:app`
+1. `Procfile` oluştur: `web: uvicorn main:app --host 0.0.0.0 --port $PORT`
 2. `requirements.txt` güncel tut
 3. Render dashboard'dan environment variables ekle
 4. GitHub repo'ya bağla → otomatik deploy
@@ -678,7 +670,7 @@ production   → Vercel (frontend) + Render (backend) + Atlas (DB)
 ## 11. MVP Öncelikleri
 
 ### Sprint 1 — Temel Altyapı
-- [ ] Flask app factory kurulumu
+- [ ] FastAPI app kurulumu ve Swagger UI testi
 - [ ] MongoDB bağlantısı ve temel CRUD
 - [ ] React + Vite + TailwindCSS kurulumu
 - [ ] Temel routing yapısı
@@ -794,7 +786,7 @@ python -m venv venv
 source venv/bin/activate        # Windows: venv\Scripts\activate
 pip install -r requirements.txt
 cp .env.example .env            # .env içini doldur
-python run.py
+uvicorn main:app --reload
 
 # Frontend
 cd frontend
@@ -810,14 +802,14 @@ npm run dev
 ### Yeni Oturum Başlangıcı
 Her yeni Claude oturumunda şunu söyle:
 
-> "CLAUDE.md dosyasını oku. Bu proje KOBİ AI Asistanı (Pulsify). Flask + MongoDB + React + Gemini stack'i kullanıyoruz. [Yapmak istediğin şeyi açıkla]"
+> "CLAUDE.md dosyasını oku. Bu proje KOBİ AI Asistanı (Pulsify). FastAPI + MongoDB + React + Gemini stack'i kullanıyoruz. [Yapmak istediğin şeyi açıkla]"
 
 ### Etkili Prompt Kalıpları
 
 **Yeni özellik geliştirme:**
 ```
 Pulsify projesinde [özellik adı] geliştireceğim.
-Stack: Flask backend, MongoDB, React + TypeScript frontend.
+Stack: FastAPI backend, MongoDB, React + TypeScript frontend.
 Mevcut klasör yapısı CLAUDE.md'de tanımlı.
 [Özelliği] implement et, CLAUDE.md'deki standartlara uy.
 ```
@@ -855,10 +847,10 @@ Naming convention, error handling ve güvenlik açısından değerlendir.
 | Secret key/API key sızıntısı | Düşük | Çok Yüksek | `.env` gitignore, secret scanning aktif et |
 | Render cold start gecikmesi | Yüksek | Düşük | Ping servisi veya ücretli plan |
 
-### Flask + Gemini Özel Riskler
-- Gemini `generate_content()` blocking call'dır — yoğun istekte Flask bloklanabilir
-- Önlem: `threading` veya ileride `async Flask (Quart)` geçişi planla
+### FastAPI + Gemini Özel Riskler
+- Gemini `generate_content()` blocking call'dır — FastAPI'de `asyncio.to_thread()` ile wrap et
 - Gemini yanıtları tutarsız JSON üretebilir — her zaman `try/except` ile parse et
+- FastAPI'nin async yapısı Motor (async MongoDB driver) ile kullanılmalı, PyMongo değil
 
 ---
 
