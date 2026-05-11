@@ -1,23 +1,13 @@
 from fastapi import APIRouter, Query
 from typing import Optional
-from bson import ObjectId
-from app.database import get_db
+from app.models.order import OrderCreate, OrderUpdate
+from app.services import order_service
 from app.utils.response import success, error
 from app.utils.logger import logger
- 
+
 router = APIRouter()
- 
- 
-def serialize_order(order: dict) -> dict:
-    order["id"] = str(order["_id"])
-    del order["_id"]
-    # datetime nesnelerini string'e çevir
-    for key, value in order.items():
-        if hasattr(value, 'isoformat'):
-            order[key] = value.isoformat()
-    return order
- 
- 
+
+
 @router.get("/")
 async def get_orders(
     status: Optional[str] = Query(None),
@@ -25,79 +15,59 @@ async def get_orders(
     skip: int = Query(0, ge=0),
 ):
     try:
-        db = get_db()
-        query = {}
-        if status:
-            query["status"] = status
- 
-        cursor = db["orders"].find(query).skip(skip).limit(limit)
-        orders = []
-        async for order in cursor:
-            orders.append(serialize_order(order))
- 
-        total = await db["orders"].count_documents(query)
- 
+        orders, total = await order_service.list_orders(status, limit, skip)
         return success(
             data=orders,
-            message="Siparişler getirildi",
+            message="Siparisler getirildi",
             meta={"total": total, "limit": limit, "skip": skip},
         )
     except Exception as e:
-        logger.error(f"Sipariş listesi hatası: {e}")
-        return error("FETCH_ERROR", "Siparişler getirilemedi", status=500)
- 
- 
+        logger.error(f"Siparis listesi hatasi: {e}")
+        return error("FETCH_ERROR", "Siparisler getirilemedi", status=500)
+
+
 @router.get("/{order_id}")
 async def get_order(order_id: str):
     try:
-        db = get_db()
-        order = await db["orders"].find_one({"_id": ObjectId(order_id)})
+        order = await order_service.get_order(order_id)
         if not order:
-            return error("NOT_FOUND", "Sipariş bulunamadı", status=404)
-        return success(data=serialize_order(order))
+            return error("NOT_FOUND", "Siparis bulunamadi", status=404)
+        return success(data=order)
     except Exception as e:
-        logger.error(f"Sipariş getirme hatası: {e}")
-        return error("FETCH_ERROR", "Sipariş getirilemedi", status=500)
- 
- 
-@router.post("/")
-async def create_order(order_data: dict):
+        logger.error(f"Siparis getirme hatasi: {e}")
+        return error("FETCH_ERROR", "Siparis getirilemedi", status=500)
+
+
+@router.post("/", status_code=201)
+async def create_order(body: OrderCreate):
     try:
-        db = get_db()
-        from datetime import datetime
-        order_data["created_at"] = datetime.utcnow()
-        order_data["updated_at"] = datetime.utcnow()
-        if "status" not in order_data:
-            order_data["status"] = "pending"
-        if "cargo_status" not in order_data:
-            order_data["cargo_status"] = "not_shipped"
- 
-        result = await db["orders"].insert_one(order_data)
-        order_data["id"] = str(result.inserted_id)
-        del order_data["_id"]
- 
-        return success(data=order_data, message="Sipariş oluşturuldu", status=201)
+        order = await order_service.create_order(body.model_dump())
+        return success(data=order, message="Siparis olusturuldu", status=201)
     except Exception as e:
-        logger.error(f"Sipariş oluşturma hatası: {e}")
-        return error("CREATE_ERROR", "Sipariş oluşturulamadı", status=500)
- 
- 
+        logger.error(f"Siparis olusturma hatasi: {e}")
+        return error("CREATE_ERROR", "Siparis olusturulamadi", status=500)
+
+
 @router.put("/{order_id}")
-async def update_order(order_id: str, update_data: dict):
+async def update_order(order_id: str, body: OrderUpdate):
     try:
-        db = get_db()
-        from datetime import datetime
-        update_data["updated_at"] = datetime.utcnow()
- 
-        result = await db["orders"].update_one(
-            {"_id": ObjectId(order_id)},
-            {"$set": update_data}
-        )
-        if result.matched_count == 0:
-            return error("NOT_FOUND", "Sipariş bulunamadı", status=404)
- 
-        updated = await db["orders"].find_one({"_id": ObjectId(order_id)})
-        return success(data=serialize_order(updated), message="Sipariş güncellendi")
+        data = {k: v for k, v in body.model_dump().items() if v is not None}
+        updated = await order_service.update_order(order_id, data)
+        if not updated:
+            return error("NOT_FOUND", "Siparis bulunamadi", status=404)
+        return success(data=updated, message="Siparis guncellendi")
     except Exception as e:
-        logger.error(f"Sipariş güncelleme hatası: {e}")
-        return error("UPDATE_ERROR", "Sipariş güncellenemedi", status=500)
+        logger.error(f"Siparis guncelleme hatasi: {e}")
+        return error("UPDATE_ERROR", "Siparis guncellenemedi", status=500)
+
+
+@router.delete("/{order_id}")
+async def delete_order(order_id: str):
+    try:
+        deleted = await order_service.delete_order(order_id)
+        if not deleted:
+            return error("NOT_FOUND", "Siparis bulunamadi", status=404)
+        return success(data=None, message="Siparis silindi")
+    except Exception as e:
+        logger.error(f"Siparis silme hatasi: {e}")
+        return error("DELETE_ERROR", "Siparis silinemedi", status=500)
