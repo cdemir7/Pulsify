@@ -321,10 +321,20 @@
 
 ## Değişiklik Geçmişi
 
-| Tarih | Değişiklik | Not |
-|---|---|---|
-| 2026-05-09 | PROGRESS.md ilk sürüm | CLAUDE.md analizine göre faz/adım yapısı kuruldu |
-| 2026-05-09 | README.md oluşturuldu | Modern, badge'li, ekran görüntüsü placeholder'lı yapı |
+| Tarih | Commit | Değişiklik | Not |
+|---|---|---|---|
+| 2026-05-09 | `94642ac` | `.gitignore` oluşturuldu | Python, Node, IDE dosyaları için temel gitignore |
+| 2026-05-09 | `85e912d` | `CLAUDE.md` oluşturuldu | Proje context dosyası — mimari, standartlar, faz planı |
+| 2026-05-09 | `78558b2` | `CLAUDE.md` güncellendi | FastAPI stack bilgisi eklendi |
+| 2026-05-09 | `15fa091` | Frontend UI sayfaları eklendi | Dashboard, Chatbot, Siparişler, Kargo, Müşteriler placeholder sayfaları |
+| 2026-05-09 | `5641988` | `requirements.txt` ve `PROGRESS.md` oluşturuldu | CLAUDE.md analizine göre faz/adım yapısı kuruldu |
+| 2026-05-09 | `878c8db` | `README.md` oluşturuldu | Modern, badge'li, ekran görüntüsü placeholder'lı yapı |
+| 2026-05-09 | `9e624d5` | MIT Lisansı eklendi | `LICENSE` dosyası oluşturuldu |
+| 2026-05-09 | `19a7057` | `PROGRESS.md` güncellendi | İlerleme durumu düzenlendi |
+| 2026-05-09 | `3e1dd7f` | React Router eklendi | 5 ana route (Dashboard, Orders, Cargo, Customers, Chatbot) tanımlandı |
+| 2026-05-09 | `a41dbe3` | `feature/routing` PR merge edildi | Routing feature branch main'e alındı |
+| 2026-05-11 | `bb176da` | Faz 1 (Backend) tamamlandı | FastAPI + MongoDB + Gemini bağlantısı, tüm router/service/model iskeletleri |
+| 2026-05-11 | `b88004e` | `.gitignore` ve `PROGRESS.md` güncellendi | Faz 1 tamamlanma durumu yansıtıldı |
 
 ---
 
