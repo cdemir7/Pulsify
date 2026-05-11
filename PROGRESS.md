@@ -61,7 +61,7 @@
 | Faz 0: Altyapı | ✅ Tamamlandı | 9/9 |
 | Faz 1: Backend Temeli | ✅ Tamamlandı | 20/20 |
 | Faz 2: Frontend Temeli | 🟡 Kısmi (UI sayfaları var) | 4/14 |
-| Faz 3: Core Features | ⬜ Başlamadı | 0/15 |
+| Faz 3: Core Features | ⏳ Devam ediyor | 6/17 |
 | Faz 4: AI Özellikleri | ⬜ Başlamadı | 0/12 |
 | Faz 5: Polish & Deploy | ⬜ Başlamadı | 0/10 |
 | Faz 6: v2.0 | 🔒 MVP sonrası | — |
@@ -167,12 +167,12 @@
 > **Referans:** CLAUDE.md §5, §6, §11
 
 ### Adım 3.1 — Orders Modülü
-- [ ] **Backend:** `Order` Pydantic model
-- [ ] **Backend:** `routers/orders.py` — GET list, GET detail, POST, PUT, DELETE
-- [ ] **Backend:** `services/order_service.py` — Motor query'ler
-- [ ] **Frontend:** `useOrders` hook + Zustand store
-- [ ] **Frontend:** `Orders.tsx` — liste tablosu, filtreler
-- [ ] **Frontend:** Sipariş detay modal/sayfa
+- [x] **Backend:** `Order` Pydantic model
+- [x] **Backend:** `routers/orders.py` — GET list, GET detail, POST, PUT, DELETE
+- [x] **Backend:** `services/order_service.py` — Motor query'ler
+- [x] **Frontend:** `useOrders` hook + Zustand store
+- [x] **Frontend:** `Orders.tsx` — liste tablosu, filtreler
+- [x] **Frontend:** Sipariş detay modal/sayfa
 
 ### Adım 3.2 — Customers Modülü
 - [ ] **Backend:** `Customer` model + CRUD endpoint'leri
@@ -333,6 +333,7 @@
 | 2026-05-09 | `3e1dd7f` | React Router eklendi | 5 ana route (Dashboard, Orders, Cargo, Customers, Chatbot) tanımlandı |
 | 2026-05-09 | `a41dbe3` | `feature/routing` PR merge edildi | Routing feature branch main'e alındı |
 | 2026-05-11 | `bb176da` | Faz 1 (Backend) tamamlandı | FastAPI + MongoDB + Gemini bağlantısı, tüm router/service/model iskeletleri |
+| 2026-05-11 | — | Adım 3.1 tamamlandı | Orders modülü — Pydantic model, service katmanı, 5 endpoint, frontend API entegrasyonu |
 | 2026-05-11 | `b88004e` | `.gitignore` ve `PROGRESS.md` güncellendi | Faz 1 tamamlanma durumu yansıtıldı |
 | 2026-05-09 | Frontend UI tamamlandı | 5 sayfa tam UI kodlandı (Dashboard, Chatbot, Orders, Cargo, Customers) — React + TypeScript + TailwindCSS |
 | 2026-05-09 | a41dbe3 | React Router ve Sidebar eklendi | 5 ana route tanımlandı, Sidebar component oluşturuldu, sayfa geçişleri aktif |

@@ -1,8 +1,5 @@
-
-Copy
-
 import axios from "axios";
- 
+
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL || "http://localhost:8000",
   headers: {
@@ -10,8 +7,7 @@ const api = axios.create({
   },
   timeout: 10000,
 });
- 
-// Response interceptor — hata yönetimi
+
 api.interceptors.response.use(
   (response) => response,
   (error) => {
@@ -23,5 +19,5 @@ api.interceptors.response.use(
     return Promise.reject(error);
   }
 );
- 
+
 export default api;
