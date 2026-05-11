@@ -334,6 +334,13 @@
 | 2026-05-09 | `a41dbe3` | `feature/routing` PR merge edildi | Routing feature branch main'e alındı |
 | 2026-05-11 | `bb176da` | Faz 1 (Backend) tamamlandı | FastAPI + MongoDB + Gemini bağlantısı, tüm router/service/model iskeletleri |
 | 2026-05-11 | `b88004e` | `.gitignore` ve `PROGRESS.md` güncellendi | Faz 1 tamamlanma durumu yansıtıldı |
+| 2026-05-09 | Frontend UI tamamlandı | 5 sayfa tam UI kodlandı (Dashboard, Chatbot, Orders, Cargo, Customers) — React + TypeScript + TailwindCSS |
+| 2026-05-09 | React Router eklendi | Sayfa geçişleri aktif, Sidebar component oluşturuldu |
+| 2026-05-11 | Faz 2 tamamlandı | strict mode, error handler, Products placeholder, Zustand, axios instance, API tipleri |
+| 2026-05-11 | Backend temeli kuruldu | FastAPI + MongoDB bağlantısı, seed data yüklendi |
+| 2026-05-11 | Backend router'ları eklendi | orders, customers, ai endpoint'leri çalışıyor |
+| 2026-05-11 | Gemini AI entegrasyonu | Türkçe chatbot, duygu analizi, günlük rapor çalışıyor |
+
 
 ---
 
