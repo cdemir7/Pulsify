@@ -9,6 +9,7 @@ from app.utils.logger import logger
 genai.configure(api_key=settings.GEMINI_API_KEY)
 model = genai.GenerativeModel("gemini-2.5-flash")
 
+import time
 
 def _parse_json(text: str) -> dict:
     try:
@@ -18,6 +19,19 @@ def _parse_json(text: str) -> dict:
     except json.JSONDecodeError as e:
         logger.warning(f"Gemini JSON parse hatasi: {e} | Yanit: {text[:200]}")
         return {}
+    
+async def _call_with_retry(func, *args, max_retries=3, **kwargs):
+    for attempt in range(max_retries):
+        try:
+            return await asyncio.to_thread(func, *args, **kwargs)
+        except Exception as e:
+            if "429" in str(e) and attempt < max_retries - 1:
+                wait_time = (attempt + 1) * 20
+                logger.warning(f"Rate limit, {wait_time}s bekleniyor... (deneme {attempt + 1}/{max_retries})")
+                await asyncio.sleep(wait_time)
+            else:
+                raise
+    raise Exception("Max retry aşıldı")
 
 
 class AIService:
@@ -31,7 +45,7 @@ Yalnizca JSON formatinda yanit ver, baska hicbir sey yazma:
 
 Mesaj: {message}
 """
-        response = await asyncio.to_thread(model.generate_content, prompt)
+        response = await _call_with_retry(model.generate_content, prompt)
         result = _parse_json(response.text)
         if "sentiment" not in result:
             result = {"sentiment": "neutral", "confidence": 0.5, "reason": "analiz yapilamadi"}
@@ -46,7 +60,7 @@ Yalnizca JSON formatinda yanit ver, baska hicbir sey yazma:
 
 Mesaj: {message}
 """
-        response = await asyncio.to_thread(model.generate_content, prompt)
+        response = await _call_with_retry(model.generate_content, prompt)
         result = _parse_json(response.text)
         if "intent" not in result:
             result = {"intent": "other", "entities": {}}
@@ -60,7 +74,7 @@ Riskli durumlari vurgula. Net ve profesyonel ol. Markdown kullanma.
 
 Veri: {json.dumps(data, ensure_ascii=False)}
 """
-        response = await asyncio.to_thread(model.generate_content, prompt)
+        response = await _call_with_retry(model.generate_content, prompt)
         return response.text
 
     @staticmethod
@@ -73,5 +87,5 @@ Kisa, net ve profesyonel cevap ver.{ctx}
 
 Musteri mesaji: {message}
 """
-        response = await asyncio.to_thread(model.generate_content, prompt)
+        response = await _call_with_retry(model.generate_content, prompt)
         return response.text

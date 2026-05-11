@@ -40,11 +40,11 @@ def create_app() -> FastAPI:
         return error("INTERNAL_ERROR", "Sunucu hatasi olustu", status=500)
 
     # Routers buraya eklenecek (Adım 1.5+)
-    # from app.routers import orders, customers, cargo, ai
-    # app.include_router(orders.router, prefix="/api/orders", tags=["orders"])
-    # app.include_router(customers.router, prefix="/api/customers", tags=["customers"])
+    from app.routers import orders, customers, ai
+    app.include_router(orders.router, prefix="/api/orders", tags=["orders"])
+    app.include_router(customers.router, prefix="/api/customers", tags=["customers"])
     # app.include_router(cargo.router, prefix="/api/cargo", tags=["cargo"])
-    # app.include_router(ai.router, prefix="/api/ai", tags=["ai"])
+    app.include_router(ai.router, prefix="/api/ai", tags=["ai"])
 
     @app.get("/", tags=["health"])
     async def root():
