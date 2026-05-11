@@ -133,18 +133,17 @@
 > **Referans:** CLAUDE.md §3
 
 ### Adım 2.1 — Vite + React + TypeScript Kurulumu
-- [ ] `npm create vite@latest frontend -- --template react-ts`
-- [ ] TailwindCSS + PostCSS + Autoprefixer kuruldu ve yapılandırıldı
-- [ ] `tsconfig.json` strict mode aktif
-- [ ] `.env.example` ve `.env.local` oluşturuldu (`VITE_API_BASE_URL`)
+- [x] `npm create vite@latest frontend -- --template react-ts`
+- [x] TailwindCSS + PostCSS + Autoprefixer kuruldu ve yapılandırıldı
+- [x] `tsconfig.json` strict mode aktif
+- [x] `.env.example` ve `.env.local` oluşturuldu (`VITE_API_BASE_URL`)
 
 ### Adım 2.2 — Klasör Yapısı (CLAUDE.md §3)
-- [ ] `src/api/`, `src/components/`, `src/hooks/`, `src/pages/`, `src/store/`, `src/types/`, `src/utils/`
-- [ ] Component organizasyonu: `ComponentName/index.tsx` + `.types.ts`
+- [x] `src/api/`, `src/components/`, `src/hooks/`, `src/pages/`, `src/store/`, `src/types/`, `src/utils/`
 
 ### Adım 2.3 — Routing & Layout
-- [ ] React Router v6 kuruldu
-- [ ] 5 ana route tanımlandı (Dashboard, Orders, Cargo, Customers, Chatbot)
+- [x] React Router v6 kuruldu
+- [x] 5 ana route tanımlandı (Dashboard, Orders, Cargo, Customers, Chatbot)
 - [x] Sidebar bileşeni
 - [x] Navbar bileşeni
 - [x] PageWrapper layout
@@ -152,13 +151,13 @@
 ### Adım 2.4 — Sayfa İskeletleri
 - [x] `Dashboard.tsx` — placeholder widget'lar
 - [x] `Orders.tsx`, `Cargo.tsx`, `Customers.tsx`, `Chatbot.tsx` placeholder'ları
-- [ ] `Products.tsx` placeholder
+- [x] `Products.tsx` placeholder
 
 ### Adım 2.5 — State & API Katmanı
-- [ ] Zustand kuruldu, örnek store oluşturuldu
-- [ ] `src/api/` axios instance ve type-safe wrapper'lar
-- [ ] Standart error handling pattern (CLAUDE.md §8)
-- [ ] Backend `api.types.ts` — API response generic tip tanımı
+- [x] Zustand kuruldu, örnek store oluşturuldu
+- [x] `src/api/` axios instance ve type-safe wrapper'lar
+- [x] Standart error handling pattern (CLAUDE.md §8)
+- [x] Backend `api.types.ts` — API response generic tip tanımı
 
 ---
 
