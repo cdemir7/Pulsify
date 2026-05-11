@@ -175,10 +175,10 @@
 - [x] **Frontend:** Sipariş detay modal/sayfa
 
 ### Adım 3.2 — Customers Modülü
-- [ ] **Backend:** `Customer` model + CRUD endpoint'leri
-- [ ] **Backend:** Sentiment history embedded array yapısı
-- [ ] **Frontend:** `Customers.tsx` — liste + sadakat skoru görseli
-- [ ] **Frontend:** Müşteri detay sayfası (sentiment trend)
+- [x] **Backend:** `Customer` model + CRUD endpoint'leri
+- [x] **Backend:** Sentiment history embedded array yapısı
+- [x] **Frontend:** `Customers.tsx` — liste + sadakat skoru görseli
+- [x] **Frontend:** Müşteri detay sayfası (sentiment trend)
 
 ### Adım 3.3 — Cargo Modülü
 - [ ] **Backend:** `routers/cargo.py` — sipariş kargo durumu güncellemesi
@@ -340,6 +340,7 @@
 | 2026-05-11 | 098f5b5 | Faz 2 Frontend tamamlandı | strict mode, error handler, Products placeholder, Zustand, axios instance, API tipleri |
 | 2026-05-11 | 77656e6 | Backend router'ları eklendi | orders, customers, ai endpoint'leri çalışıyor, seed data yüklendi |
 | 2026-05-11 | fbd44a9 | Gemini AI entegrasyonu tamamlandı | Türkçe chatbot, duygu analizi, günlük rapor çalışıyor |
+| 2026-05-11 | 8a282ee | Adım 3.2 tamamlandı — Customers Modülü | Customer model, servis, router, frontend API bağlantısı ve detay modal |
 
 
 ---
