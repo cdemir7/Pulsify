@@ -58,8 +58,8 @@
 
 | Faz | Durum | İlerleme |
 |---|---|---|
-| Faz 0: Altyapı | ⏳ Devam ediyor | 9/9 |
-| Faz 1: Backend Temeli | ⬜ Başlamadı | 0/12 |
+| Faz 0: Altyapı | ✅ Tamamlandı | 9/9 |
+| Faz 1: Backend Temeli | ✅ Tamamlandı | 20/20 |
 | Faz 2: Frontend Temeli | 🟡 Kısmi (UI sayfaları var) | 4/14 |
 | Faz 3: Core Features | ⬜ Başlamadı | 0/15 |
 | Faz 4: AI Özellikleri | ⬜ Başlamadı | 0/12 |
@@ -96,34 +96,34 @@
 > **Referans:** CLAUDE.md §4, §5, §7
 
 ### Adım 1.1 — Klasör Yapısı
-- [ ] `backend/` klasörü oluşturuldu
-- [ ] `backend/app/` modül yapısı kuruldu (`routers/`, `services/`, `models/`, `utils/`)
-- [ ] `backend/tests/` klasörü hazırlandı
-- [ ] `backend/.env.example` ve `backend/.env` oluşturuldu
+- [x] `backend/` klasörü oluşturuldu
+- [x] `backend/app/` modül yapısı kuruldu (`routers/`, `services/`, `models/`, `utils/`)
+- [x] `backend/tests/` klasörü hazırlandı
+- [x] `backend/.env.example` ve `backend/.env` oluşturuldu
 
 ### Adım 1.2 — FastAPI App Factory
-- [ ] `main.py` — `create_app()` factory pattern (CLAUDE.md §4)
-- [ ] `app/config.py` — Pydantic `BaseSettings` ile env yönetimi
-- [ ] CORS middleware kuruldu (CORS_ORIGINS env'den)
-- [ ] Otomatik Swagger UI testi (`/docs`)
+- [x] `main.py` — `create_app()` factory pattern (CLAUDE.md §4)
+- [x] `app/config.py` — Pydantic `BaseSettings` ile env yönetimi
+- [x] CORS middleware kuruldu (CORS_ORIGINS env'den)
+- [x] Otomatik Swagger UI testi (`/docs`)
 
 ### Adım 1.3 — MongoDB Bağlantısı
-- [ ] `app/database.py` — Motor async client kurulumu
-- [ ] MongoDB Atlas free-tier cluster oluşturuldu
-- [ ] Connection string `.env`'e eklendi
-- [ ] İndeksler tanımlandı (CLAUDE.md §5 — orders, customers, products, ai_reports)
+- [x] `app/database.py` — Motor async client kurulumu
+- [x] MongoDB local kuruldu, Compass ile doğrulandı
+- [x] Connection string `.env`'e eklendi
+- [x] İndeksler tanımlandı (CLAUDE.md §5 — orders, customers, products, ai_reports)
 
 ### Adım 1.4 — Standartlar & Utilities
-- [ ] `app/utils/response.py` — `success()` ve `error()` helper'ları
-- [ ] `app/utils/logger.py` — yapılandırılmış logger
-- [ ] Global exception handler (`@app.exception_handler`)
-- [ ] Pydantic modelleri için BaseModel template
+- [x] `app/utils/response.py` — `success()` ve `error()` helper'ları
+- [x] `app/utils/logger.py` — yapılandırılmış logger
+- [x] Global exception handler (`@app.exception_handler`)
+- [x] Pydantic modelleri için BaseModel template
 
 ### Adım 1.5 — Gemini Bağlantı Testi
-- [ ] `app/services/ai_service.py` — temel sınıf iskeleti
-- [ ] Gemini API key `.env`'e eklendi
-- [ ] `genai.configure()` ve test prompt'u çalıştırıldı
-- [ ] `asyncio.to_thread()` wrapper'ı oluşturuldu (blocking call önlemi)
+- [x] `app/services/ai_service.py` — temel sınıf iskeleti
+- [x] Gemini API key `.env`'e eklendi
+- [x] `genai.configure()` ve test prompt'u çalıştırıldı
+- [x] `asyncio.to_thread()` wrapper'ı oluşturuldu (blocking call önlemi)
 
 ---
 
