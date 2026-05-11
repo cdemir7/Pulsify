@@ -4,6 +4,7 @@ import Chatbot from './components/Chatbot'
 import Orders from './components/Orders'
 import Cargo from './components/Cargo'
 import Customers from './components/Customers'
+import DelayedCargoList from './components/DelayedCargoList'
 
 function App() {
   return (
@@ -14,6 +15,7 @@ function App() {
         <Route path="/chatbot" element={<Chatbot />} />
         <Route path="/orders" element={<Orders />} />
         <Route path="/cargo" element={<Cargo />} />
+        <Route path="/cargo/delayed" element={<DelayedCargoList />} />
         <Route path="/customers" element={<Customers />} />
       </Routes>
     </BrowserRouter>

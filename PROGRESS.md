@@ -61,7 +61,7 @@
 | Faz 0: Altyapı | ✅ Tamamlandı | 9/9 |
 | Faz 1: Backend Temeli | ✅ Tamamlandı | 20/20 |
 | Faz 2: Frontend Temeli | 🟡 Kısmi (UI sayfaları var) | 4/14 |
-| Faz 3: Core Features | ⏳ Devam ediyor | 6/17 |
+| Faz 3: Core Features | ✅ Tamamlandı | 17/17 |
 | Faz 4: AI Özellikleri | ⬜ Başlamadı | 0/12 |
 | Faz 5: Polish & Deploy | ⬜ Başlamadı | 0/10 |
 | Faz 6: v2.0 | 🔒 MVP sonrası | — |
@@ -181,15 +181,15 @@
 - [x] **Frontend:** Müşteri detay sayfası (sentiment trend)
 
 ### Adım 3.3 — Cargo Modülü
-- [ ] **Backend:** `routers/cargo.py` — sipariş kargo durumu güncellemesi
-- [ ] **Frontend:** `Cargo.tsx` — kargo durumu listesi
-- [ ] **Frontend:** Geciken kargo vurgulaması (kırmızı badge)
+- [x] **Backend:** `routers/cargo.py` — sipariş kargo durumu güncellemesi
+- [x] **Frontend:** `Cargo.tsx` — kargo durumu listesi
+- [x] **Frontend:** Geciken kargo vurgulaması (kırmızı badge)
 
 ### Adım 3.4 — Dashboard Widget'ları
-- [ ] Toplam sipariş kartı
-- [ ] Bekleyen kargo kartı
-- [ ] Mutsuz müşteri sayısı kartı
-- [ ] Stok uyarı kartı
+- [x] Toplam sipariş kartı
+- [x] Bekleyen kargo kartı
+- [x] Mutsuz müşteri sayısı kartı
+- [x] Stok uyarı kartı
 
 ---
 
@@ -341,7 +341,7 @@
 | 2026-05-11 | 77656e6 | Backend router'ları eklendi | orders, customers, ai endpoint'leri çalışıyor, seed data yüklendi |
 | 2026-05-11 | fbd44a9 | Gemini AI entegrasyonu tamamlandı | Türkçe chatbot, duygu analizi, günlük rapor çalışıyor |
 | 2026-05-11 | 8a282ee | Adım 3.2 tamamlandı — Customers Modülü | Customer model, servis, router, frontend API bağlantısı ve detay modal |
-
+| 2026-05-12 | `e17dfc1` | Adım 3.3 ve 3.4 tamamlandı | Kargo Modülü, CEO Insight AI Özeti ve Canlı Dashboard veritabanına bağlandı. Faz 3 tamamen bitti. |
 
 ---
 

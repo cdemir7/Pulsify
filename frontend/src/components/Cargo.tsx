@@ -1,42 +1,117 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import Sidebar from './Sidebar'
+import { cargoApi } from '../api';
 
-const delayedCargos = [
-  { tracking: "TRK884521", customer: "Ahmet Yılmaz", initials: "AY", avatarColor: "rgba(239,68,68,0.15)", avatarText: "#EF4444", expected: "7 May", delay: "2 gün", delayLevel: "high", sentiment: "😠", notified: false },
-  { tracking: "TRK990341", customer: "Zeynep Arslan", initials: "ZA", avatarColor: "rgba(245,158,11,0.15)", avatarText: "#F59E0B", expected: "6 May", delay: "3 gün", delayLevel: "high", sentiment: "😠", notified: true  },
-  { tracking: "TRK551872", customer: "Murat Kılıç",  initials: "MK", avatarColor: "rgba(107,114,128,0.15)",avatarText: "#8B8B9E", expected: "8 May", delay: "1 gün", delayLevel: "mid",  sentiment: "😐", notified: false },
-];
+interface CargoOrder {
+  id: string;
+  order_code: string;
+  customer_name: string;
+  tracking_number?: string;
+  estimated_delivery?: string;
+  cargo_status: string;
+  cargo_company?: string;
+  delay_days?: number;
+  last_notified_at?: string;
+}
 
-const timeline = [
-  { dot: "bg-red-500",     title: "TRK884521 gecikiyor",    sub: "Ahmet Yılmaz · 2 gün geç",         time: "Bugün, 08:42" },
-  { dot: "bg-red-500",     title: "TRK990341 gecikiyor",    sub: "Zeynep Arslan · Bildirim gönderildi", time: "Bugün, 07:15" },
-  { dot: "bg-emerald-500", title: "TRK773412 teslim edildi",sub: "Fatma Kaya · Zamanında",            time: "Bugün, 11:30" },
-  { dot: "bg-amber-500",   title: "TRK551872 risk altında", sub: "Murat Kılıç · 1 gün geç",          time: "Dün, 18:00"   },
-  { dot: "bg-emerald-500", title: "TRK661209 teslim edildi",sub: "Mehmet Şahin · Zamanında",         time: "Dün, 14:22"   },
-];
-
-const dailyReport = [
-  { icon: "📦", label: "Toplam kargo",       value: "128", color: "#F1F1F5"  },
-  { icon: "✅", label: "Teslim edildi",       value: "78",  color: "#10B981"  },
-  { icon: "⏰", label: "Gecikiyor",           value: "3",   color: "#EF4444"  },
-  { icon: "🚚", label: "Yolda",              value: "47",  color: "#6366F1"  },
-  { icon: "🔔", label: "Bildirim gönderildi", value: "1",   color: "#F59E0B"  },
-];
+interface CargoStats {
+  delayed: number;
+  delivered: number;
+  in_transit: number;
+  total_shipped: number;
+  on_time_percentage: number;
+}
 
 export default function Cargo() {
-  const [notifiedList, setNotifiedList] = useState<string[]>(["TRK990341"]);
+  const navigate = useNavigate();
+  const [delayedCargos, setDelayedCargos] = useState<CargoOrder[]>([]);
+  const [stats, setStats] = useState<CargoStats | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [notifiedList, setNotifiedList] = useState<string[]>([]);
   const [aiDismissed, setAiDismissed] = useState(false);
   const [allNotified, setAllNotified] = useState(false);
+  const [aiTriageList, setAiTriageList] = useState<any[]>([]);
+  const [aiLoading, setAiLoading] = useState(false);
 
-  const handleNotify = (tracking: string) => {
-    setNotifiedList((prev) => [...prev, tracking]);
+  const [ceoInsight, setCeoInsight] = useState<string | null>(null);
+  const [insightLoading, setInsightLoading] = useState(false);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        const [delayedRes, statsRes] = await Promise.all([
+          cargoApi.getDelayed(),
+          cargoApi.getStats(),
+        ]);
+        setDelayedCargos(delayedRes.data?.data ?? []);
+        setStats(statsRes.data?.data ?? null);
+      } catch (err) {
+        setError("Kargo verileri yüklenemedi.");
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, []);
+
+  const handleNotify = async (id: string) => {
+    try {
+      await cargoApi.notify(id);
+      setNotifiedList((prev) => [...prev, id]);
+    } catch (err) {
+      console.error("Bildirim gönderilemedi:", err);
+      alert("Bildirim gönderilemedi. Lütfen tekrar deneyin.");
+    }
   };
 
-  const handleNotifyAll = () => {
-    setNotifiedList(delayedCargos.map((c) => c.tracking));
-    setAllNotified(true);
-    setAiDismissed(true);
+  const handleNotifyAll = async () => {
+    try {
+      const promises = delayedCargos.map((c) => cargoApi.notify(c.id));
+      await Promise.all(promises);
+      setNotifiedList(delayedCargos.map((c) => c.id));
+      setAllNotified(true);
+      setAiDismissed(true);
+    } catch (err) {
+      console.error("Toplu bildirim başarısız:", err);
+      alert("Bazı bildirimler gönderilemedi.");
+    }
   };
+
+  const handleRunAiTriage = async () => {
+    try {
+      setAiLoading(true);
+      const res = await cargoApi.getAiTriage();
+      setAiTriageList(res.data?.data ?? []);
+    } catch (err) {
+      console.error("AI Triage başarısız:", err);
+      alert("AI optimizasyonu çalıştırılamadı.");
+    } finally {
+      setAiLoading(false);
+    }
+  };
+
+  const handleGetCeoInsight = async () => {
+    try {
+      setInsightLoading(true);
+      const res = await cargoApi.getAiInsight();
+      setCeoInsight(res.data?.data?.insight ?? "Özet oluşturulamadı.");
+    } catch (err) {
+      console.error("CEO Özeti başarısız:", err);
+      alert("AI CEO özeti üretilemedi.");
+    } finally {
+      setInsightLoading(false);
+    }
+  };
+
+  const getInitials = (name: string) =>
+    name.split(" ").map((n) => n[0]).join("").slice(0, 2).toUpperCase();
+
+  const getDelayLevel = (days: number) => (days >= 2 ? "high" : "mid");
+
 
   return (
     <div className="flex min-h-screen" style={{ background: "#0A0A0F", fontFamily: "'Plus Jakarta Sans', sans-serif", color: "#F1F1F5" }}>
@@ -59,29 +134,28 @@ export default function Cargo() {
         <div className="flex-1 overflow-y-auto px-6 py-5 flex flex-col gap-4">
 
           {/* Alert Bar */}
-          <div className="flex items-center gap-4 px-5 py-4 rounded-xl" style={{ background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.25)" }}>
-            <div className="flex items-center justify-center w-9 h-9 rounded-xl shrink-0 text-red-400 text-lg animate-pulse" style={{ background: "rgba(239,68,68,0.15)" }}>⚠️</div>
-            <div className="flex-1">
-              <p className="text-sm font-bold text-red-400">3 kargo gecikiyor — acil aksiyon gerekli</p>
-              <p className="text-xs mt-0.5" style={{ color: "#8B8B9E" }}>Ortalama gecikme 2.3 gün · 2 müşteri sinirli olarak işaretlendi</p>
+          {!loading && (stats?.delayed ?? 0) > 0 && (
+            <div className="flex items-center gap-4 px-5 py-4 rounded-xl" style={{ background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.25)" }}>
+              <div className="flex items-center justify-center w-9 h-9 rounded-xl shrink-0 text-red-400 text-lg animate-pulse" style={{ background: "rgba(239,68,68,0.15)" }}>⚠️</div>
+              <div className="flex-1">
+                <p className="text-sm font-bold text-red-400">{stats?.delayed} kargo gecikiyor — acil aksiyon gerekli</p>
+                <p className="text-xs mt-0.5" style={{ color: "#8B8B9E" }}>Geciken kargoları inceleyin ve müşterileri bilgilendirin</p>
+              </div>
+              <div className="flex gap-2 shrink-0">
+                <button onClick={handleNotifyAll} className="flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-xs font-semibold text-white cursor-pointer" style={{ background: allNotified ? "#10B981" : "#EF4444", border: "none", fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+                  {allNotified ? "✓ Gönderildi" : "➤ Hepsine Bildir"}
+                </button>
+              </div>
             </div>
-            <div className="flex gap-2 shrink-0">
-              <button className="px-3.5 py-2 rounded-lg text-xs font-semibold text-red-400 cursor-pointer" style={{ border: "1px solid rgba(239,68,68,0.4)", background: "none", fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
-                Detayları Gör
-              </button>
-              <button onClick={handleNotifyAll} className="flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-xs font-semibold text-white cursor-pointer" style={{ background: allNotified ? "#10B981" : "#EF4444", border: "none", fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
-                {allNotified ? "✓ Gönderildi" : "➤ Hepsine Bildir"}
-              </button>
-            </div>
-          </div>
+          )}
 
           {/* Stats */}
           <div className="grid grid-cols-4 gap-3">
             {[
-              { label: "Geciken Kargo",    value: "3",   sub: "↑ 1 artış — dün 2'ydi",    icon: "⏰", valueColor: "#EF4444" },
-              { label: "Ort. Gecikme",     value: "2.3", sub: "gün ortalama",              icon: "⌛", valueColor: "#F59E0B" },
-              { label: "Zamanında Teslim", value: "%94", sub: "↓ %2 geçen haftadan",       icon: "✅", valueColor: "#10B981" },
-              { label: "Aktif Kargo",      value: "128", sub: "yolda olan paket",          icon: "🚚", valueColor: "#F1F1F5" },
+              { label: "Geciken Kargo",    value: loading ? "—" : String(stats?.delayed ?? 0),         sub: "geciken teslimat",       icon: "⏰", valueColor: "#EF4444" },
+              { label: "Yolda",            value: loading ? "—" : String(stats?.in_transit ?? 0),       sub: "aktif kargo",           icon: "🚚", valueColor: "#6366F1" },
+              { label: "Zamanında Teslim", value: loading ? "—" : `%${stats?.on_time_percentage ?? 0}`, sub: "teslim oranı",           icon: "✅", valueColor: "#10B981" },
+              { label: "Toplam Teslim",    value: loading ? "—" : String(stats?.delivered ?? 0),        sub: "başarıyla teslim edildi", icon: "📦", valueColor: "#F1F1F5" },
             ].map((stat) => (
               <div key={stat.label} className="rounded-xl p-4" style={{ background: "#111118", border: "1px solid #1E1E2E" }}>
                 <div className="flex items-center justify-between mb-2.5">
@@ -102,9 +176,14 @@ export default function Cargo() {
                 <div className="flex items-center justify-between px-5 py-3.5" style={{ borderBottom: "1px solid #1E1E2E" }}>
                   <div className="flex items-center gap-2">
                     <span className="text-sm font-semibold">Geciken Kargolar</span>
-                    <span className="text-[11px] px-2 py-0.5 rounded-md font-semibold text-red-400" style={{ background: "rgba(239,68,68,0.12)" }}>3 acil</span>
+                    <span className="text-[11px] px-2 py-0.5 rounded-md font-semibold text-red-400" style={{ background: "rgba(239,68,68,0.12)" }}>{delayedCargos.length} kargo</span>
                   </div>
-                  <span className="text-xs text-indigo-400 font-medium cursor-pointer">Tümünü Gör →</span>
+                  <span 
+                    onClick={() => navigate('/cargo/delayed')}
+                    className="text-xs text-indigo-400 font-medium cursor-pointer hover:underline transition-all"
+                  >
+                    Tümünü Gör →
+                  </span>
                 </div>
                 <table className="w-full border-collapse">
                   <thead>
@@ -115,37 +194,56 @@ export default function Cargo() {
                     </tr>
                   </thead>
                   <tbody>
-                    {delayedCargos.map((cargo) => {
-                      const isNotified = notifiedList.includes(cargo.tracking);
+                    {loading ? (
+                      <tr><td colSpan={6} className="px-5 py-8 text-center text-sm" style={{ color: "#6B7280" }}>Yükleniyor...</td></tr>
+                    ) : error ? (
+                      <tr><td colSpan={6} className="px-5 py-8 text-center text-sm text-red-400">{error}</td></tr>
+                    ) : delayedCargos.length === 0 ? (
+                      <tr><td colSpan={6} className="px-5 py-8 text-center text-sm" style={{ color: "#6B7280" }}>Geciken kargo yok 🎉</td></tr>
+                    ) : delayedCargos.map((cargo) => {
+                      const isNotified = notifiedList.includes(cargo.id);
+                      const delayDays = cargo.delay_days ?? 0;
+                      const delayLevel = getDelayLevel(delayDays);
+                      const initials = getInitials(cargo.customer_name);
+                      const expectedDate = cargo.estimated_delivery
+                        ? new Date(cargo.estimated_delivery).toLocaleDateString("tr-TR", { day: "numeric", month: "short" })
+                        : "—";
                       return (
-                        <tr key={cargo.tracking} className="cursor-pointer hover:bg-white/[0.02] transition-colors" style={{ borderBottom: "1px solid #1A1A24" }}>
-                          <td className="px-5 py-3.5 font-mono text-xs" style={{ color: "#6B7280" }}>{cargo.tracking}</td>
+                        <tr key={cargo.id} className="cursor-pointer hover:bg-white/[0.02] transition-colors" style={{ borderBottom: "1px solid #1A1A24" }}>
+                          <td className="px-5 py-3.5 font-mono text-xs" style={{ color: "#6B7280" }}>{cargo.tracking_number ?? "—"}</td>
                           <td className="px-5 py-3.5">
                             <div className="flex items-center gap-2.5">
-                              <div className="flex items-center justify-center w-7 h-7 rounded-full text-[10px] font-bold" style={{ background: cargo.avatarColor, color: cargo.avatarText }}>{cargo.initials}</div>
-                              <span className="text-[13px] text-white font-medium">{cargo.customer}</span>
+                              <div className="flex items-center justify-center w-7 h-7 rounded-full text-[10px] font-bold" style={{ background: "rgba(239,68,68,0.15)", color: "#EF4444" }}>{initials}</div>
+                              <span className="text-[13px] text-white font-medium">{cargo.customer_name}</span>
                             </div>
                           </td>
-                          <td className="px-5 py-3.5 text-[13px]" style={{ color: "#6B7280" }}>{cargo.expected}</td>
+                          <td className="px-5 py-3.5 text-[13px]" style={{ color: "#6B7280" }}>{expectedDate}</td>
                           <td className="px-5 py-3.5">
-                            <span className={`inline-flex items-center gap-1.5 px-2 py-1 rounded-md text-[11px] font-bold ${cargo.delayLevel === "high" ? "text-red-400 bg-red-500/12" : "text-amber-400 bg-amber-500/12"}`}>
-                              ⏱ {cargo.delay}
+                            <span className={`inline-flex items-center gap-1.5 px-2 py-1 rounded-md text-[11px] font-bold ${delayLevel === "high" ? "text-red-400 bg-red-500/12" : "text-amber-400 bg-amber-500/12"}`}>
+                              ⏱ {delayDays} gün
                             </span>
                           </td>
-                          <td className="px-5 py-3.5 text-base">{cargo.sentiment}</td>
+                          <td className="px-5 py-3.5 text-base">😠</td>
                           <td className="px-5 py-3.5">
-                            <button
-                              onClick={() => !isNotified && handleNotify(cargo.tracking)}
-                              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all cursor-pointer"
-                              style={{
-                                border: isNotified ? "1px solid rgba(16,185,129,0.3)" : "1px solid #2A2A38",
-                                background: isNotified ? "rgba(16,185,129,0.06)" : "none",
-                                color: isNotified ? "#10B981" : "#8B8B9E",
-                                fontFamily: "'Plus Jakarta Sans', sans-serif",
-                              }}
-                            >
-                              {isNotified ? "✓ Gönderildi" : "➤ Bildir"}
-                            </button>
+                            <div className="flex flex-col gap-1.5 items-start">
+                              <button
+                                onClick={() => !isNotified && handleNotify(cargo.id)}
+                                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all cursor-pointer"
+                                style={{
+                                  border: isNotified ? "1px solid rgba(16,185,129,0.3)" : "1px solid #2A2A38",
+                                  background: isNotified ? "rgba(16,185,129,0.06)" : "none",
+                                  color: isNotified ? "#10B981" : "#8B8B9E",
+                                  fontFamily: "'Plus Jakarta Sans', sans-serif",
+                                }}
+                              >
+                                {isNotified ? "✓ Gönderildi" : "➤ Bildir"}
+                              </button>
+                              {cargo.last_notified_at && (
+                                <span className="text-[10px]" style={{ color: "#6B7280" }}>
+                                  Son: {new Date(cargo.last_notified_at).toLocaleDateString("tr-TR", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}
+                                </span>
+                              )}
+                            </div>
                           </td>
                         </tr>
                       );
@@ -158,22 +256,47 @@ export default function Cargo() {
               {!aiDismissed && (
                 <div className="rounded-xl overflow-hidden" style={{ background: "#0F0F1A", border: "1px solid rgba(99,102,241,0.25)" }}>
                   <div className="flex items-center gap-2.5 px-5 py-3.5" style={{ borderBottom: "1px solid rgba(99,102,241,0.15)" }}>
-                    <span className="text-indigo-400 text-base">✦</span>
-                    <span className="text-[13px] font-semibold text-indigo-400 flex-1">AI Kargo Raporu — Gemini Önerisi</span>
-                    <span className="text-[11px]" style={{ color: "#4A4A5E" }}>09:00'da üretildi</span>
+                    <span className="text-indigo-400 text-base">🤖</span>
+                    <span className="text-[13px] font-semibold text-indigo-400 flex-1">AI Kargo Triyaj Optimizasyonu</span>
+                    {!aiTriageList.length && (
+                      <button onClick={handleRunAiTriage} disabled={aiLoading} className="text-[11px] bg-indigo-500/20 text-indigo-300 px-3 py-1 rounded-md cursor-pointer hover:bg-indigo-500/30 transition-colors">
+                        {aiLoading ? "Hesaplanıyor..." : "Şimdi Çalıştır"}
+                      </button>
+                    )}
                   </div>
                   <div className="px-5 py-4">
-                    <p className="text-[13px] leading-relaxed mb-4" style={{ color: "#C4C4D4" }}>
-                      <strong className="text-white">3 geciken kargo</strong> tespit edildi. Ahmet Yılmaz ve Zeynep Arslan sinirli olarak işaretlendi — bu müşterilere öncelikli bildirim gönderilmesi önerilir. Murat Kılıç'ın gecikmesi 1 gün olup henüz nötr durumda. <strong className="text-white">Otomatik bildirim</strong> gönderilsin mi?
-                    </p>
-                    <div className="flex gap-3">
-                      <button onClick={handleNotifyAll} className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-[13px] font-semibold text-white bg-indigo-500 cursor-pointer" style={{ border: "none", fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
-                        ➤ Evet, Hepsine Gönder
-                      </button>
-                      <button onClick={() => setAiDismissed(true)} className="flex-1 py-2.5 rounded-xl text-[13px] text-[#8B8B9E] cursor-pointer" style={{ border: "1px solid #2A2A38", background: "none", fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
-                        Hayır, Geç
-                      </button>
-                    </div>
+                    {!aiTriageList.length ? (
+                      <p className="text-[13px] leading-relaxed mb-4" style={{ color: "#C4C4D4" }}>
+                        Kuş uçuşu mesafe, müşteri duygu durumu ve gecikme süresine göre kargo sırasını optimize etmek için <strong className="text-white">AI Triyaj</strong> sistemini çalıştırın.
+                      </p>
+                    ) : (
+                      <div className="flex flex-col gap-3">
+                        <p className="text-[12px] text-indigo-300 mb-1">
+                          ✓ Haversine formülü ile mesafeler hesaplandı ve öncelikler yeniden belirlendi.
+                        </p>
+                        <div className="flex flex-col gap-3 pr-2 overflow-y-auto" style={{ maxHeight: "300px" }}>
+                          {aiTriageList.map((item, index) => (
+                            <div key={item.id} className="flex flex-col gap-1.5 p-3 rounded-lg shrink-0" style={{ background: "rgba(99,102,241,0.05)", border: "1px solid rgba(99,102,241,0.1)" }}>
+                              <div className="flex justify-between items-center">
+                                <span className="text-[13px] font-bold text-white">
+                                  {index + 1}. {item.customer_name}
+                                </span>
+                                <span className="text-[11px] font-bold px-2 py-0.5 rounded bg-indigo-500/20 text-indigo-300">
+                                  Skor: {item.ai_score}
+                                </span>
+                              </div>
+                              <span className="text-[12px]" style={{ color: "#8B8B9E" }}>
+                                <strong>Neden:</strong> {item.ai_reason}
+                              </span>
+                              <div className="flex gap-4 mt-1 text-[11px] font-medium" style={{ color: "#6B7280" }}>
+                                <span>📍 {item.delivery_city} ({item.distance_km}km)</span>
+                                <span>⏱ {item.delay_days} gün gecikme</span>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
               )}
@@ -181,25 +304,61 @@ export default function Cargo() {
 
             {/* Right Panel */}
             <div className="flex flex-col gap-4">
+              {/* CEO Insight Widget */}
+              <div className="rounded-xl overflow-hidden" style={{ background: "linear-gradient(to bottom right, #111118, #0B0B12)", border: "1px solid rgba(168,85,247,0.25)" }}>
+                <div className="flex items-center justify-between px-5 py-3.5" style={{ borderBottom: "1px solid rgba(168,85,247,0.15)" }}>
+                  <div className="flex items-center gap-2">
+                    <span className="text-purple-400 text-sm">✨</span>
+                    <span className="text-sm font-semibold text-purple-100">CEO Operasyon Özeti</span>
+                  </div>
+                  {!ceoInsight && (
+                    <button onClick={handleGetCeoInsight} disabled={insightLoading} className="text-[11px] bg-purple-500/20 text-purple-300 px-3 py-1 rounded-md cursor-pointer hover:bg-purple-500/30 transition-colors">
+                      {insightLoading ? "Analiz Ediliyor..." : "Rapor Üret"}
+                    </button>
+                  )}
+                </div>
+                <div className="px-5 py-4">
+                  {insightLoading ? (
+                    <div className="flex flex-col gap-2 animate-pulse">
+                      <div className="h-2.5 bg-purple-500/20 rounded w-full"></div>
+                      <div className="h-2.5 bg-purple-500/20 rounded w-5/6"></div>
+                      <div className="h-2.5 bg-purple-500/20 rounded w-4/6"></div>
+                    </div>
+                  ) : ceoInsight ? (
+                    <p className="text-[13px] leading-relaxed text-purple-50">
+                      {ceoInsight}
+                    </p>
+                  ) : (
+                    <p className="text-[12px] text-[#8B8B9E] italic text-center py-2">
+                      Günlük kargo istatistiklerini Gemini AI ile analiz edin.
+                    </p>
+                  )}
+                </div>
+              </div>
+
               {/* Timeline */}
               <div className="rounded-xl overflow-hidden" style={{ background: "#111118", border: "1px solid #1E1E2E" }}>
                 <div className="px-5 py-3.5" style={{ borderBottom: "1px solid #1E1E2E" }}>
                   <span className="text-sm font-semibold">Kargo Zaman Çizelgesi</span>
                 </div>
                 <div className="px-5 py-4 flex flex-col gap-0">
-                  {timeline.map((item, i) => (
-                    <div key={i} className="flex gap-3 pb-4 last:pb-0">
-                      <div className="flex flex-col items-center">
-                        <div className={`w-2.5 h-2.5 rounded-full shrink-0 mt-0.5 ${item.dot}`} />
-                        {i < timeline.length - 1 && <div className="w-px flex-1 mt-1" style={{ background: "#1E1E2E", minHeight: "20px" }} />}
+                  {delayedCargos.length === 0 ? (
+                    <p className="text-xs text-[#6B7280]">Aktif olay yok</p>
+                  ) : (
+                    delayedCargos.slice(0, 5).map((item, i) => (
+                      <div key={item.id} className="flex gap-3 pb-4 last:pb-0">
+                        <div className="flex flex-col items-center">
+                          <div className={`w-2.5 h-2.5 rounded-full shrink-0 mt-0.5 ${item.cargo_status === 'delayed' ? 'bg-red-500' : 'bg-amber-500'}`} />
+                          {i < Math.min(delayedCargos.length, 5) - 1 && <div className="w-px flex-1 mt-1" style={{ background: "#1E1E2E", minHeight: "20px" }} />}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-[13px] font-semibold text-white">{item.tracking_number} gecikiyor</p>
+                          <p className="text-[12px] mt-0.5" style={{ color: "#6B7280" }}>{item.customer_name} · {item.delay_days} gün geç</p>
+                          <p className="text-[11px] mt-0.5" style={{ color: "#4A4A5E" }}>Sistem Uyarısı</p>
+                        </div>
                       </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-[13px] font-semibold text-white">{item.title}</p>
-                        <p className="text-[12px] mt-0.5" style={{ color: "#6B7280" }}>{item.sub}</p>
-                        <p className="text-[11px] mt-0.5" style={{ color: "#4A4A5E" }}>{item.time}</p>
-                      </div>
-                    </div>
-                  ))}
+                    ))
+                  )}
                 </div>
               </div>
 
@@ -207,15 +366,20 @@ export default function Cargo() {
               <div className="rounded-xl overflow-hidden" style={{ background: "#111118", border: "1px solid #1E1E2E" }}>
                 <div className="flex items-center justify-between px-5 py-3.5" style={{ borderBottom: "1px solid #1E1E2E" }}>
                   <span className="text-sm font-semibold">Günlük Rapor</span>
-                  <span className="text-[11px]" style={{ color: "#4A4A5E" }}>9 Mayıs 2026</span>
+                  <span className="text-[11px]" style={{ color: "#4A4A5E" }}>{new Date().toLocaleDateString("tr-TR", { day: "numeric", month: "long", year: "numeric" })}</span>
                 </div>
                 <div className="px-5 py-4 flex flex-col gap-2">
-                  {dailyReport.map((row) => (
+                  {[
+                    { icon: "📦", label: "Toplam Gönderim", value: stats?.total_shipped ?? "—", color: "#F1F1F5" },
+                    { icon: "✅", label: "Teslim Edildi",    value: stats?.delivered ?? "—",     color: "#10B981" },
+                    { icon: "⏰", label: "Gecikiyor",        value: stats?.delayed ?? "—",       color: "#EF4444" },
+                    { icon: "🚚", label: "Yolda",           value: stats?.in_transit ?? "—",    color: "#6366F1" },
+                  ].map((row) => (
                     <div key={row.label} className="flex items-center justify-between px-3 py-2 rounded-lg" style={{ background: "#0F0F16" }}>
                       <span className="text-xs flex items-center gap-2" style={{ color: "#8B8B9E" }}>
                         <span>{row.icon}</span> {row.label}
                       </span>
-                      <span className="text-[13px] font-semibold" style={{ color: row.color }}>{row.value}</span>
+                      <span className="text-[13px] font-semibold" style={{ color: row.color }}>{String(row.value)}</span>
                     </div>
                   ))}
                 </div>

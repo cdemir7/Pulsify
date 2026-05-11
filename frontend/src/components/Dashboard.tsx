@@ -1,19 +1,7 @@
-import Sidebar from './Sidebar'
- 
-const stats = [
-  { label: "Toplam Sipariş", value: "247", trend: "↑ %12 dünden fazla",    trendType: "up",      icon: "📦", color: "indigo" },
-  { label: "Geciken Kargo",  value: "3",   trend: "↑ 1 artış — dün 2'ydi", trendType: "down",    icon: "🚚", color: "red"    },
-  { label: "Memnuniyet",     value: "%91", trend: "↓ %3 düştü",            trendType: "down",    icon: "😊", color: "green"  },
-  { label: "Kritik Stok",    value: "2",   trend: "Değişmedi",              trendType: "neutral", icon: "⚠️", color: "amber"  },
-];
- 
-const orders = [
-  { id: "#1234", customer: "Ahmet Yılmaz", product: "Ürün A", amount: "₺450", status: "delayed",    sentiment: "😠" },
-  { id: "#1235", customer: "Fatma Kaya",   product: "Ürün B", amount: "₺280", status: "delivered",  sentiment: "😊" },
-  { id: "#1236", customer: "Ali Rıza",     product: "Ürün C", amount: "₺920", status: "processing", sentiment: "😐" },
-  { id: "#1237", customer: "Ayşe Demir",   product: "Ürün D", amount: "₺165", status: "cancelled",  sentiment: "😐" },
-  { id: "#1238", customer: "Mehmet Şahin", product: "Ürün A", amount: "₺340", status: "delivered",  sentiment: "😊" },
-];
+import { useState, useEffect } from 'react';
+import Sidebar from './Sidebar';
+import { dashboardApi } from '../api/dashboard';
+import { cargoApi } from '../api/cargo';
  
 const statusConfig: Record<string, { label: string; dot: string; text: string; bg: string }> = {
   delivered:  { label: "Teslim",    dot: "bg-emerald-500",           text: "text-emerald-400", bg: "bg-emerald-500/10" },
@@ -22,16 +10,7 @@ const statusConfig: Record<string, { label: string; dot: string; text: string; b
   cancelled:  { label: "İptal",     dot: "bg-gray-500",              text: "text-gray-400",    bg: "bg-gray-500/10"    },
 };
  
-const sentiments = [
-  { emoji: "😊", label: "Mutlu",   count: 182, pct: 74, bar: "bg-emerald-500" },
-  { emoji: "😐", label: "Nötr",    count: 47,  pct: 19, bar: "bg-gray-500"    },
-  { emoji: "😠", label: "Sinirli", count: 18,  pct: 7,  bar: "bg-red-500"     },
-];
- 
-const riskCustomers = [
-  { initials: "AY", name: "Ahmet Yılmaz",  score: 42 },
-  { initials: "ZA", name: "Zeynep Arslan", score: 38 },
-];
+
  
 const statColorMap: Record<string, { iconBg: string; iconText: string; valueColor: string }> = {
   indigo: { iconBg: "bg-indigo-500/15",  iconText: "text-indigo-400",  valueColor: "text-white"     },
@@ -41,6 +20,50 @@ const statColorMap: Record<string, { iconBg: string; iconText: string; valueColo
 };
  
 export default function Dashboard() {
+  const [data, setData] = useState<any>(null);
+  const [insight, setInsight] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [insightLoading, setInsightLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const res = await dashboardApi.getSummary();
+        setData(res.data?.data);
+      } catch (err) {
+        console.error("Dashboard veri çekme hatası:", err);
+      }
+      
+      try {
+        setInsightLoading(true);
+        const aiRes = await cargoApi.getAiInsight();
+        setInsight(aiRes.data?.data?.insight);
+      } catch (err) {
+        console.error("AI Insight çekme hatası:", err);
+      } finally {
+        setInsightLoading(false);
+      }
+      
+      setLoading(false);
+    };
+    fetchData();
+  }, []);
+
+  const stats = data ? [
+    { label: "Toplam Sipariş", value: String(data.stats.total_orders), trend: "Canlı Veri", trendType: "neutral", icon: "📦", color: "indigo" },
+    { label: "Geciken Kargo",  value: String(data.stats.delayed_cargo), trend: "Kargo Modülü", trendType: data.stats.delayed_cargo > 0 ? "down" : "neutral", icon: "🚚", color: "red" },
+    { label: "Memnuniyet",     value: `%${data.stats.satisfaction}`, trend: "Müşteri Modülü", trendType: data.stats.satisfaction > 80 ? "up" : "down", icon: "😊", color: "green" },
+    { label: "Kritik Stok",    value: String(data.stats.critical_stock), trend: "Stok Modülü", trendType: data.stats.critical_stock > 0 ? "down" : "neutral", icon: "⚠️", color: "amber" },
+  ] : [];
+
+  const orders = data?.latest_orders || [];
+  const sentiments = data?.sentiments || [];
+  const riskCustomers = data?.risk_customers || [];
+
+  if (loading) {
+    return <div className="flex min-h-screen items-center justify-center text-white" style={{ background: "#0A0A0F" }}>Yükleniyor...</div>;
+  }
+
   return (
     <div
       className="flex min-h-screen"
@@ -70,15 +93,28 @@ export default function Dashboard() {
             </div>
             <div className="flex-1">
               <p className="text-[10px] font-semibold uppercase tracking-widest text-indigo-400 mb-1.5">AI Operasyon Özeti</p>
-              <p className="text-[13px] leading-relaxed" style={{ color: "#C4C4D4" }}>
-                Bugün <strong className="text-white">247 aktif sipariş</strong> var.{" "}
-                <strong className="text-white">3 kargo gecikiyor</strong> — Ahmet Yılmaz ve 2 müşteri daha risk altında.
-                Stokta <strong className="text-white">Ürün C kritik seviyede</strong> (4 adet kaldı).
-                Müşteri memnuniyeti dünden <strong className="text-white">%3 düştü</strong>, acil aksiyon önerilir.
-              </p>
+              <div className="text-[13px] leading-relaxed min-h-[40px]" style={{ color: "#C4C4D4" }}>
+                {insightLoading ? (
+                  <div className="flex flex-col gap-2 animate-pulse mt-1">
+                    <div className="h-2.5 bg-indigo-500/20 rounded w-full"></div>
+                    <div className="h-2.5 bg-indigo-500/20 rounded w-5/6"></div>
+                    <div className="h-2.5 bg-indigo-500/20 rounded w-4/6"></div>
+                  </div>
+                ) : insight ? (
+                  <p>{insight}</p>
+                ) : (
+                  <p>
+                    Bugün <strong className="text-white">{data?.stats?.total_orders || 0} aktif sipariş</strong> var.{" "}
+                    <strong className="text-white">{data?.stats?.delayed_cargo || 0} kargo gecikiyor</strong>. 
+                    Stokta <strong className="text-white">{data?.stats?.critical_stock || 0} ürün kritik seviyede</strong>.
+                    Müşteri memnuniyeti <strong className="text-white">%{data?.stats?.satisfaction || 0}</strong>, verileri inceleyin.
+                  </p>
+                )}
+              </div>
               <div className="flex items-center justify-between mt-2.5">
-                <span className="text-[11px]" style={{ color: "#4A4A5E" }}>⏱ 09:00'da üretildi</span>
-                <span className="text-[12px] text-indigo-400 font-semibold cursor-pointer">Detaylar →</span>
+                <span className="text-[11px]" style={{ color: "#4A4A5E" }}>
+                  {insightLoading ? "🤖 AI analiz ediyor..." : "⏱ Canlı Analiz"}
+                </span>
               </div>
             </div>
           </div>
@@ -100,13 +136,13 @@ export default function Dashboard() {
           </div>
  
           <div className="grid gap-4" style={{ gridTemplateColumns: "1fr 320px" }}>
-            <div className="rounded-xl overflow-hidden" style={{ background: "#111118", border: "1px solid #1E1E2E" }}>
-              <div className="flex items-center justify-between px-5 py-3.5" style={{ borderBottom: "1px solid #1E1E2E" }}>
+            <div className="rounded-xl overflow-hidden flex flex-col max-h-[450px]" style={{ background: "#111118", border: "1px solid #1E1E2E" }}>
+              <div className="flex items-center justify-between px-5 py-3.5 shrink-0" style={{ borderBottom: "1px solid #1E1E2E" }}>
                 <span className="text-sm font-semibold">Son Siparişler</span>
-                <span className="text-xs text-indigo-400 font-medium cursor-pointer">Tümünü Gör →</span>
               </div>
-              <table className="w-full border-collapse">
-                <thead>
+              <div className="overflow-y-auto flex-1 scrollbar-thin scrollbar-thumb-[#1E1E2E] scrollbar-track-transparent">
+                <table className="w-full border-collapse">
+                  <thead className="sticky top-0 z-10 shadow-sm">
                   <tr style={{ borderBottom: "1px solid #1A1A24", background: "#0F0F16" }}>
                     {["Sipariş", "Müşteri", "Ürün", "Tutar", "Durum"].map((h) => (
                       <th key={h} className="text-left px-5 py-3 text-[11px] font-semibold uppercase tracking-wide" style={{ color: "#4A4A5E" }}>{h}</th>
@@ -114,8 +150,8 @@ export default function Dashboard() {
                   </tr>
                 </thead>
                 <tbody>
-                  {orders.map((order) => {
-                    const s = statusConfig[order.status];
+                  {orders.map((order: any) => {
+                    const s = statusConfig[order.status] || statusConfig["processing"];
                     return (
                       <tr key={order.id} className="cursor-pointer transition-colors hover:bg-white/[0.02]" style={{ borderBottom: "1px solid #1A1A24" }}>
                         <td className="px-5 py-3 font-mono text-xs" style={{ color: "#6B7280" }}>{order.id}</td>
@@ -133,16 +169,16 @@ export default function Dashboard() {
                   })}
                 </tbody>
               </table>
+              </div>
             </div>
  
             <div className="flex flex-col gap-4">
               <div className="rounded-xl overflow-hidden" style={{ background: "#111118", border: "1px solid #1E1E2E" }}>
                 <div className="flex items-center justify-between px-5 py-3.5" style={{ borderBottom: "1px solid #1E1E2E" }}>
                   <span className="text-sm font-semibold">Müşteri Duygu Analizi</span>
-                  <span className="text-xs text-indigo-400 font-medium cursor-pointer">Detay →</span>
                 </div>
                 <div className="px-5 py-4 flex flex-col gap-3.5">
-                  {sentiments.map((s) => (
+                  {sentiments.map((s: any) => (
                     <div key={s.label} className="flex flex-col gap-1.5">
                       <div className="flex items-center justify-between">
                         <span className="text-[13px] flex items-center gap-2" style={{ color: "#C4C4D4" }}><span>{s.emoji}</span> {s.label}</span>
@@ -157,7 +193,7 @@ export default function Dashboard() {
                 <div className="px-5 pb-4" style={{ borderTop: "1px solid #1E1E2E", paddingTop: "14px" }}>
                   <p className="text-[11px] font-semibold uppercase tracking-wide text-red-400 mb-2.5">⚠ Risk Altındaki Müşteriler</p>
                   <div className="flex flex-col gap-2">
-                    {riskCustomers.map((c) => (
+                    {riskCustomers.map((c: any) => (
                       <div key={c.name} className="flex items-center gap-2.5 px-3 py-2 rounded-lg cursor-pointer" style={{ background: "rgba(239,68,68,0.06)", border: "1px solid rgba(239,68,68,0.12)" }}>
                         <div className="flex items-center justify-center w-7 h-7 rounded-full text-[11px] font-bold text-red-400" style={{ background: "rgba(239,68,68,0.2)" }}>{c.initials}</div>
                         <div className="flex-1">

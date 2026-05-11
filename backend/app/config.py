@@ -9,6 +9,9 @@ class Settings(BaseSettings):
     SECRET_KEY: str = "dev-secret-change-in-production"
     CORS_ORIGINS: str = "http://localhost:5173"
     DEBUG: bool = False
+    
+    TELEGRAM_BOT_TOKEN: str = ""
+    TELEGRAM_CHAT_ID: str = ""
 
     @property
     def cors_origins_list(self) -> list[str]:

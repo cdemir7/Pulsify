@@ -18,6 +18,9 @@ class OrderCreate(PulsifyBaseModel):
     cargo_company: Optional[str] = None
     tracking_number: Optional[str] = None
     estimated_delivery: Optional[datetime] = None
+    delivery_city: Optional[str] = None
+    telegram_chat_id: Optional[str] = None
+    last_notified_at: Optional[datetime] = None
 
 
 class OrderUpdate(PulsifyBaseModel):
@@ -29,6 +32,7 @@ class OrderUpdate(PulsifyBaseModel):
     cargo_company: Optional[str] = None
     tracking_number: Optional[str] = None
     estimated_delivery: Optional[datetime] = None
+    telegram_chat_id: Optional[str] = None
 
 
 class OrderResponse(OrderCreate, TimestampMixin):
