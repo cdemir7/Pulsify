@@ -15,7 +15,7 @@
 [![MongoDB](https://img.shields.io/badge/MongoDB-Atlas-47A248?style=for-the-badge&logo=mongodb&logoColor=white)](https://mongodb.com)
 [![Gemini](https://img.shields.io/badge/Google_Gemini-2.5_Flash-4285F4?style=for-the-badge&logo=google&logoColor=white)](https://deepmind.google/gemini)
 
-[![License](https://img.shields.io/badge/License-Yakında_Eklenecek-gray?style=for-the-badge)](#)
+[![License](MIT License)](#)
 [![Status](https://img.shields.io/badge/Status-MVP_Geliştirme-orange?style=for-the-badge)](#)
 
 </div>
