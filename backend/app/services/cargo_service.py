@@ -203,47 +203,36 @@ class CargoService:
 
     @staticmethod
     async def get_ai_insight():
-        """
-        Kargo operasyonlari hakkinda genel AI otoyumu/ozeti uretir.
-        """
-        import google.generativeai as genai
-        from app.config import settings
-        
-        # Anlik istatistikleri cek
+        import asyncio
+        from app.services.ai_service import model
+
         stats = await CargoService.get_stats()
-        
-        # Geciken top 5 kargoyu cek (sehirler vb icin)
         delayed_all = await CargoService.get_delayed()
-        delayed_info = [f"Şehir: {o.get('delivery_city', 'Bilinmiyor')}, Gecikme: {o.get('delay_days', 0)} gün" for o in delayed_all[:5]]
-        
+        delayed_info = [
+            f"Sehir: {o.get('delivery_city', 'Bilinmiyor')}, Gecikme: {o.get('delay_days', 0)} gun"
+            for o in delayed_all[:5]
+        ]
+
         prompt = f"""
-        Sen bir Kargo Lojistik ve Tedarik Zinciri uzmanısın. İşletme yöneticisi için kısa, aksiyon odaklı ve proaktif bir günlük rapor hazırlayacaksın.
-        
-        Güncel Veriler:
-        - Toplam Çıkan Kargo: {stats['total_shipped']}
-        - Yolda: {stats['in_transit']}
-        - Teslim Edilen: {stats['delivered']}
-        - Geciken Kargo Sayısı: {stats['delayed']}
-        - Zamanında Teslim Oranı: %{stats['on_time_percentage']}
-        
-        Dikkat Çeken Gecikmeler:
-        {', '.join(delayed_info) if delayed_info else 'Dikkat çeken gecikme yok.'}
-        
-        Görev: Yukarıdaki verileri analiz et. Sorun varsa (örneğin gecikmeler artmışsa veya belirli bir rotada yığılma varsa) yöneticiye ne yapması gerektiğini (örn: dışarıdan araç kirala, o bölgedeki kuryeleri uyar vb.) 3-4 satırlık net, profesyonel bir metinle söyle. Sorun yoksa işlerin yolunda olduğunu belirterek motivasyon verici kısa bir analiz sun.
-        Lütfen cevabın doğrudan rapor metni olsun, giriş veya selamlaşma yapma. Maksimum 3-4 cümle olsun.
-        """
+Sen bir Kargo Lojistik uzmanisin. Isletme yoneticisi icin kisa, aksiyon odakli Turkce bir gunluk rapor hazirla.
+
+Guncel Veriler:
+- Toplam Cikan Kargo: {stats['total_shipped']}
+- Yolda: {stats['in_transit']}
+- Teslim Edilen: {stats['delivered']}
+- Geciken Kargo: {stats['delayed']}
+- Zamaninda Teslim Orani: %{stats['on_time_percentage']}
+
+Dikkat Ceken Gecikmeler:
+{', '.join(delayed_info) if delayed_info else 'Gecikme yok.'}
+
+Gorev: Verileri analiz et. Sorun varsa yoneticiye ne yapmasi gerektigini soylemek icin 2-3 cumle yaz.
+Sorun yoksa isler yolundadir de ve kisa bir analiz sun. Direkt rapor metni yaz, selamlasmadan.
+"""
 
         try:
-            if not settings.GEMINI_API_KEY or settings.GEMINI_API_KEY == "your-gemini-api-key":
-                # Fallback if key is missing/invalid
-                return "Gemini API anahtarı ayarlanmamış. Sistem geçici olarak yerel analiz sunuyor: Gecikme oranı şu anki verilere göre normal seviyelerde. İzmir ve Ankara rotalarındaki gecikmelere dikkat edilmesi ve gerekirse o bölgelere ek kurye yönlendirilmesi tavsiye edilir."
-                
-            genai.configure(api_key=settings.GEMINI_API_KEY)
-            model = genai.GenerativeModel("gemini-2.5-flash")
-            response = model.generate_content(prompt)
+            response = await asyncio.to_thread(model.generate_content, prompt)
             return response.text.strip()
-            
         except Exception as e:
-            print(f"!!! GEMINI HATASI: {e}")
-            logger.error(f"Gemini API hatasi: {e}")
-            return "Kargo verileriniz analiz edildi ancak AI modeli şu an yanıt veremiyor. Zamanında teslim oranınız güncel olarak takip edilmektedir."
+            logger.error(f"Gemini cargo insight hatasi: {e}")
+            return f"Kargo ozeti uretilirken hata olustu: {str(e)[:80]}"
