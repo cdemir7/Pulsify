@@ -1,5 +1,7 @@
 import { useState } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
+import { LogOut } from "lucide-react"
+import { useAuthStore } from "../store/useAuthStore"
 
 const navItems = [
   { label: "Dashboard",  icon: "▦",  path: "/dashboard", badge: null  },
@@ -114,18 +116,27 @@ export default function Sidebar() {
             </div>
           ))}
         </nav>
-
         {/* User */}
         <div className="px-2.5 py-3" style={{ borderTop: "1px solid #1E1E2E" }}>
-          <div className="flex items-center gap-2.5 px-2.5 py-2 rounded-lg">
+          <div className="flex items-center gap-2.5 px-2.5 py-2 rounded-lg relative group">
             <div className="flex items-center justify-center w-8 h-8 rounded-full bg-gradient-to-br from-indigo-500 to-violet-500 text-white text-[11px] font-bold shrink-0">
-              CD
+              AD
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-xs font-semibold text-white">Cihan D.</p>
+              <p className="text-xs font-semibold text-white">Admin</p>
               <p className="text-[11px]" style={{ color: "#4A4A5E" }}>Yönetici</p>
             </div>
-            <span style={{ color: "#4A4A5E" }}>···</span>
+            
+            <button 
+              onClick={() => {
+                useAuthStore.getState().logout();
+                window.location.href = "/login";
+              }}
+              className="text-[#4A4A5E] hover:text-red-400 transition-colors p-1"
+              title="Çıkış Yap"
+            >
+              <LogOut size={16} />
+            </button>
           </div>
         </div>
       </aside>
