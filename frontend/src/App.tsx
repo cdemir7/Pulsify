@@ -5,10 +5,12 @@ import Orders from './components/Orders'
 import Cargo from './components/Cargo'
 import Customers from './components/Customers'
 import DelayedCargoList from './components/DelayedCargoList'
+import { ToastContainer } from './components/common/Toast'
 
 function App() {
   return (
     <BrowserRouter>
+      <ToastContainer />
       <Routes>
         <Route path="/" element={<Navigate to="/dashboard" replace />} />
         <Route path="/dashboard" element={<Dashboard />} />

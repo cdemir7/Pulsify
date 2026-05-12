@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import Sidebar from './Sidebar';
+import { SkeletonCard } from './common/Skeleton';
 import { dashboardApi } from '../api/dashboard';
 import { cargoApi } from '../api/cargo';
  
@@ -19,35 +20,63 @@ const statColorMap: Record<string, { iconBg: string; iconText: string; valueColo
   amber:  { iconBg: "bg-amber-500/15",   iconText: "text-amber-400",   valueColor: "text-amber-400" },
 };
  
+const INSIGHT_CACHE_KEY = "pulsify_ai_insight";
+
+function loadCachedInsight(): { text: string; timestamp: string } | null {
+  try {
+    const raw = localStorage.getItem(INSIGHT_CACHE_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
+}
+
+function formatTimestamp(iso: string): string {
+  const diff = Math.floor((Date.now() - new Date(iso).getTime()) / 60000);
+  if (diff < 1) return "Az önce";
+  if (diff < 60) return `${diff} dakika önce`;
+  const h = Math.floor(diff / 60);
+  return h < 24 ? `${h} saat önce` : `${Math.floor(h / 24)} gün önce`;
+}
+
 export default function Dashboard() {
   const [data, setData] = useState<any>(null);
-  const [insight, setInsight] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
-  const [insightLoading, setInsightLoading] = useState(true);
+  const [insightLoading, setInsightLoading] = useState(false);
+  const [cachedInsight, setCachedInsight] = useState<{ text: string; timestamp: string } | null>(null);
 
   useEffect(() => {
-    const fetchData = async () => {
+    // Sayfa açılınca önce cache'e bak
+    setCachedInsight(loadCachedInsight());
+
+    const fetchSummary = async () => {
       try {
         const res = await dashboardApi.getSummary();
         setData(res.data?.data);
       } catch (err) {
         console.error("Dashboard veri çekme hatası:", err);
-      }
-      
-      try {
-        setInsightLoading(true);
-        const aiRes = await cargoApi.getAiInsight();
-        setInsight(aiRes.data?.data?.insight);
-      } catch (err) {
-        console.error("AI Insight çekme hatası:", err);
       } finally {
-        setInsightLoading(false);
+        setLoading(false);
       }
-      
-      setLoading(false);
     };
-    fetchData();
+
+    fetchSummary();
   }, []);
+
+  const runAiInsight = async () => {
+    setInsightLoading(true);
+    try {
+      const aiRes = await cargoApi.getAiInsight();
+      const text = aiRes.data?.data?.insight ?? "Yanıt alınamadı.";
+      const entry = { text, timestamp: new Date().toISOString() };
+      localStorage.setItem(INSIGHT_CACHE_KEY, JSON.stringify(entry));
+      setCachedInsight(entry);
+    } catch (err) {
+      console.error("AI Insight hatası:", err);
+    } finally {
+      setInsightLoading(false);
+    }
+  };
 
   const stats = data ? [
     { label: "Toplam Sipariş", value: String(data.stats.total_orders), trend: "Canlı Veri", trendType: "neutral", icon: "📦", color: "indigo" },
@@ -60,10 +89,6 @@ export default function Dashboard() {
   const sentiments = data?.sentiments || [];
   const riskCustomers = data?.risk_customers || [];
 
-  if (loading) {
-    return <div className="flex min-h-screen items-center justify-center text-white" style={{ background: "#0A0A0F" }}>Yükleniyor...</div>;
-  }
-
   return (
     <div
       className="flex min-h-screen"
@@ -73,7 +98,7 @@ export default function Dashboard() {
  
       <main className="flex flex-col flex-1 overflow-hidden">
         <div
-          className="flex items-center justify-between px-6 py-4 shrink-0"
+          className="flex items-center justify-between pl-14 lg:pl-6 pr-6 py-4 shrink-0"
           style={{ background: "#0A0A0F", borderBottom: "1px solid #1E1E2E" }}
         >
           <div>
@@ -92,7 +117,18 @@ export default function Dashboard() {
               <span className="text-indigo-400 text-base">✦</span>
             </div>
             <div className="flex-1">
-              <p className="text-[10px] font-semibold uppercase tracking-widest text-indigo-400 mb-1.5">AI Operasyon Özeti</p>
+              <div className="flex items-center justify-between mb-1.5">
+                <p className="text-[10px] font-semibold uppercase tracking-widest text-indigo-400">AI Operasyon Özeti</p>
+                <button
+                  onClick={runAiInsight}
+                  disabled={insightLoading}
+                  className="flex items-center gap-1.5 px-3 py-1 rounded-lg text-[11px] font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                  style={{ background: "rgba(99,102,241,0.15)", border: "1px solid rgba(99,102,241,0.3)", color: "#818CF8" }}
+                >
+                  {insightLoading ? "⏳ Analiz ediliyor..." : "▶ Şimdi Çalıştır"}
+                </button>
+              </div>
+
               <div className="text-[13px] leading-relaxed min-h-[40px]" style={{ color: "#C4C4D4" }}>
                 {insightLoading ? (
                   <div className="flex flex-col gap-2 animate-pulse mt-1">
@@ -100,42 +136,47 @@ export default function Dashboard() {
                     <div className="h-2.5 bg-indigo-500/20 rounded w-5/6"></div>
                     <div className="h-2.5 bg-indigo-500/20 rounded w-4/6"></div>
                   </div>
-                ) : insight ? (
-                  <p>{insight}</p>
+                ) : cachedInsight ? (
+                  <p>{cachedInsight.text}</p>
                 ) : (
-                  <p>
-                    Bugün <strong className="text-white">{data?.stats?.total_orders || 0} aktif sipariş</strong> var.{" "}
-                    <strong className="text-white">{data?.stats?.delayed_cargo || 0} kargo gecikiyor</strong>. 
-                    Stokta <strong className="text-white">{data?.stats?.critical_stock || 0} ürün kritik seviyede</strong>.
-                    Müşteri memnuniyeti <strong className="text-white">%{data?.stats?.satisfaction || 0}</strong>, verileri inceleyin.
+                  <p className="italic" style={{ color: "#4A4A5E" }}>
+                    Henüz analiz çalıştırılmadı. "Şimdi Çalıştır" butonuna basarak AI özeti oluşturun.
                   </p>
                 )}
               </div>
+
               <div className="flex items-center justify-between mt-2.5">
                 <span className="text-[11px]" style={{ color: "#4A4A5E" }}>
-                  {insightLoading ? "🤖 AI analiz ediyor..." : "⏱ Canlı Analiz"}
+                  {insightLoading
+                    ? "🤖 AI analiz ediyor..."
+                    : cachedInsight
+                    ? `⏱ Son çalıştırma: ${formatTimestamp(cachedInsight.timestamp)}`
+                    : "▶ Butona basarak başlatın"}
                 </span>
               </div>
             </div>
           </div>
  
-          <div className="grid grid-cols-4 gap-3">
-            {stats.map((stat) => {
-              const colors = statColorMap[stat.color];
-              return (
-                <div key={stat.label} className="rounded-xl p-4 cursor-pointer" style={{ background: "#111118", border: "1px solid #1E1E2E" }}>
-                  <div className="flex items-center justify-between mb-3">
-                    <span className="text-xs font-medium" style={{ color: "#6B7280" }}>{stat.label}</span>
-                    <div className={`flex items-center justify-center w-7 h-7 rounded-lg ${colors.iconBg} ${colors.iconText} text-sm`}>{stat.icon}</div>
-                  </div>
-                  <p className={`text-[26px] font-bold leading-none mb-1.5 tracking-tight ${colors.valueColor}`}>{stat.value}</p>
-                  <p className={`text-xs ${stat.trendType === "up" && stat.color !== "red" ? "text-emerald-400" : stat.trendType === "down" ? "text-red-400" : "text-[#6B7280]"}`}>{stat.trend}</p>
-                </div>
-              );
-            })}
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+            {loading
+              ? Array.from({ length: 4 }).map((_, i) => <SkeletonCard key={i} />)
+              : stats.map((stat) => {
+                  const colors = statColorMap[stat.color];
+                  return (
+                    <div key={stat.label} className="rounded-xl p-4 cursor-pointer" style={{ background: "#111118", border: "1px solid #1E1E2E" }}>
+                      <div className="flex items-center justify-between mb-3">
+                        <span className="text-xs font-medium" style={{ color: "#6B7280" }}>{stat.label}</span>
+                        <div className={`flex items-center justify-center w-7 h-7 rounded-lg ${colors.iconBg} ${colors.iconText} text-sm`}>{stat.icon}</div>
+                      </div>
+                      <p className={`text-[26px] font-bold leading-none mb-1.5 tracking-tight ${colors.valueColor}`}>{stat.value}</p>
+                      <p className={`text-xs ${stat.trendType === "up" && stat.color !== "red" ? "text-emerald-400" : stat.trendType === "down" ? "text-red-400" : "text-[#6B7280]"}`}>{stat.trend}</p>
+                    </div>
+                  );
+                })
+            }
           </div>
  
-          <div className="grid gap-4" style={{ gridTemplateColumns: "1fr 320px" }}>
+          <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-4">
             <div className="rounded-xl overflow-hidden flex flex-col max-h-[450px]" style={{ background: "#111118", border: "1px solid #1E1E2E" }}>
               <div className="flex items-center justify-between px-5 py-3.5 shrink-0" style={{ borderBottom: "1px solid #1E1E2E" }}>
                 <span className="text-sm font-semibold">Son Siparişler</span>

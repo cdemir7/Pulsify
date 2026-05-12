@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import Sidebar from "./Sidebar";
 import { useOrderStore } from "../store/useOrderStore";
+import { SkeletonRow } from "./common/Skeleton";
+import { EmptyState } from "./common/EmptyState";
 import type { Order, OrderStatus } from "../types/api.types";
 
 const statusConfig: Record<string, { label: string; dot: string; text: string; bg: string }> = {
@@ -60,13 +62,13 @@ function OrderDetailModal({ order, onClose, onStatusChange }: {
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center"
+      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center"
       style={{ background: "rgba(0,0,0,0.7)", backdropFilter: "blur(4px)" }}
       onClick={onClose}
     >
       <div
-        className="w-full max-w-lg rounded-2xl flex flex-col overflow-hidden"
-        style={{ background: "#111118", border: "1px solid #1E1E2E", maxHeight: "90vh" }}
+        className="w-full sm:max-w-lg sm:rounded-2xl rounded-t-2xl flex flex-col overflow-hidden"
+        style={{ background: "#111118", border: "1px solid #1E1E2E", maxHeight: "92vh" }}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
@@ -190,7 +192,7 @@ export default function Orders() {
 
       <main className="flex flex-col flex-1 overflow-hidden">
         {/* Topbar */}
-        <div className="flex items-center justify-between px-6 py-4 shrink-0" style={{ background: "#0A0A0F", borderBottom: "1px solid #1E1E2E" }}>
+        <div className="flex items-center justify-between pl-14 lg:pl-6 pr-6 py-4 shrink-0" style={{ background: "#0A0A0F", borderBottom: "1px solid #1E1E2E" }}>
           <div>
             <h1 className="text-lg font-bold tracking-tight">Siparişler</h1>
             <p className="text-xs mt-0.5" style={{ color: "#4A4A5E" }}>Toplam {total} sipariş</p>
@@ -232,69 +234,93 @@ export default function Orders() {
             </div>
           </div>
 
-          {isLoading && <div className="text-center py-12 text-[#4A4A5E] text-sm">Yükleniyor...</div>}
           {error && <div className="text-center py-12 text-red-400 text-sm">{error}</div>}
 
-          {!isLoading && !error && (
-            <div className="rounded-xl overflow-hidden flex flex-col" style={{ background: "#111118", border: "1px solid #1E1E2E" }}>
-              {filtered.length === 0 ? (
-                <div className="text-center py-16 text-[#4A4A5E] text-sm">Sipariş bulunamadı</div>
-              ) : (
-                <table className="w-full border-collapse">
+          {isLoading && (
+            <div className="rounded-xl overflow-hidden" style={{ background: "#111118", border: "1px solid #1E1E2E" }}>
+              <div className="overflow-x-auto">
+                <table className="w-full border-collapse min-w-[700px]">
                   <thead>
                     <tr style={{ background: "#0F0F16", borderBottom: "1px solid #1A1A24" }}>
                       {["Sipariş No", "Müşteri", "Ürün", "Tutar", "Durum", "Kargo", "Tarih", ""].map((h) => (
-                        <th key={h} className="text-left px-4 py-3 text-[11px] font-semibold uppercase tracking-wide whitespace-nowrap" style={{ color: "#4A4A5E" }}>{h}</th>
+                        <th key={h} className="text-left px-4 py-3 text-[11px] font-semibold uppercase tracking-wide" style={{ color: "#4A4A5E" }}>{h}</th>
                       ))}
                     </tr>
                   </thead>
                   <tbody>
-                    {filtered.map((order: Order) => {
-                      const s = statusConfig[order.status] ?? statusConfig["pending"];
-                      return (
-                        <tr
-                          key={order.id}
-                          className="cursor-pointer transition-colors hover:bg-white/[0.02]"
-                          style={{ borderBottom: "1px solid #1A1A24" }}
-                          onClick={() => setSelectedOrder(order)}
-                        >
-                          <td className="px-4 py-3 font-mono text-xs" style={{ color: "#6B7280" }}>{order.order_code}</td>
-                          <td className="px-4 py-3">
-                            <div className="flex items-center gap-2.5">
-                              <div className="flex items-center justify-center w-7 h-7 rounded-full text-[10px] font-bold shrink-0 bg-indigo-500/20 text-indigo-400">
-                                {initials(order.customer_name)}
-                              </div>
-                              <p className="text-[13px] font-medium text-white">{order.customer_name}</p>
-                            </div>
-                          </td>
-                          <td className="px-4 py-3 text-[13px]" style={{ color: "#C4C4D4" }}>{order.product}</td>
-                          <td className="px-4 py-3 text-[13px] font-semibold text-white">₺{order.amount.toLocaleString("tr-TR")}</td>
-                          <td className="px-4 py-3">
-                            <span className={`inline-flex items-center gap-1.5 px-2 py-1 rounded-md text-[11px] font-semibold ${s.bg} ${s.text}`}>
-                              <span className={`w-1.5 h-1.5 rounded-full ${s.dot}`} />
-                              {s.label}
-                            </span>
-                          </td>
-                          <td className="px-4 py-3 font-mono text-[11px]" style={{ color: order.tracking_number ? "#6B7280" : "#4A4A5E" }}>
-                            {order.tracking_number ?? "—"}
-                          </td>
-                          <td className="px-4 py-3 text-[13px]" style={{ color: "#6B7280" }}>
-                            {new Date(order.created_at).toLocaleDateString("tr-TR")}
-                          </td>
-                          <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
-                            <button
-                              onClick={() => setSelectedOrder(order)}
-                              className="flex items-center justify-center w-7 h-7 rounded-lg text-[13px] transition-all hover:text-indigo-400"
-                              style={{ border: "1px solid #2A2A38", background: "none", color: "#6B7280", cursor: "pointer" }}
-                            >
-                              👁
-                            </button>
-                          </td>
-                        </tr>
-                      );
-                    })}
+                    {Array.from({ length: 5 }).map((_, i) => <SkeletonRow key={i} cols={8} />)}
                   </tbody>
                 </table>
+              </div>
+            </div>
+          )}
+
+          {!isLoading && !error && (
+            <div className="rounded-xl overflow-hidden flex flex-col" style={{ background: "#111118", border: "1px solid #1E1E2E" }}>
+              {filtered.length === 0 ? (
+                <EmptyState
+                  icon="📦"
+                  title="Sipariş bulunamadı"
+                  description={search ? `"${search}" için sonuç yok` : "Henüz hiç sipariş eklenmemiş"}
+                />
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="w-full border-collapse min-w-[700px]">
+                    <thead>
+                      <tr style={{ background: "#0F0F16", borderBottom: "1px solid #1A1A24" }}>
+                        {["Sipariş No", "Müşteri", "Ürün", "Tutar", "Durum", "Kargo", "Tarih", ""].map((h) => (
+                          <th key={h} className="text-left px-4 py-3 text-[11px] font-semibold uppercase tracking-wide whitespace-nowrap" style={{ color: "#4A4A5E" }}>{h}</th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {filtered.map((order: Order) => {
+                        const s = statusConfig[order.status] ?? statusConfig["pending"];
+                        return (
+                          <tr
+                            key={order.id}
+                            className="cursor-pointer transition-colors hover:bg-white/[0.02]"
+                            style={{ borderBottom: "1px solid #1A1A24" }}
+                            onClick={() => setSelectedOrder(order)}
+                          >
+                            <td className="px-4 py-3 font-mono text-xs" style={{ color: "#6B7280" }}>{order.order_code}</td>
+                            <td className="px-4 py-3">
+                              <div className="flex items-center gap-2.5">
+                                <div className="flex items-center justify-center w-7 h-7 rounded-full text-[10px] font-bold shrink-0 bg-indigo-500/20 text-indigo-400">
+                                  {initials(order.customer_name)}
+                                </div>
+                                <p className="text-[13px] font-medium text-white">{order.customer_name}</p>
+                              </div>
+                            </td>
+                            <td className="px-4 py-3 text-[13px]" style={{ color: "#C4C4D4" }}>{order.product}</td>
+                            <td className="px-4 py-3 text-[13px] font-semibold text-white">₺{order.amount.toLocaleString("tr-TR")}</td>
+                            <td className="px-4 py-3">
+                              <span className={`inline-flex items-center gap-1.5 px-2 py-1 rounded-md text-[11px] font-semibold ${s.bg} ${s.text}`}>
+                                <span className={`w-1.5 h-1.5 rounded-full ${s.dot}`} />
+                                {s.label}
+                              </span>
+                            </td>
+                            <td className="px-4 py-3 font-mono text-[11px]" style={{ color: order.tracking_number ? "#6B7280" : "#4A4A5E" }}>
+                              {order.tracking_number ?? "—"}
+                            </td>
+                            <td className="px-4 py-3 text-[13px]" style={{ color: "#6B7280" }}>
+                              {new Date(order.created_at).toLocaleDateString("tr-TR")}
+                            </td>
+                            <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
+                              <button
+                                onClick={() => setSelectedOrder(order)}
+                                className="flex items-center justify-center w-7 h-7 rounded-lg text-[13px] transition-all hover:text-indigo-400"
+                                style={{ border: "1px solid #2A2A38", background: "none", color: "#6B7280", cursor: "pointer" }}
+                              >
+                                👁
+                              </button>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
               )}
               <div className="flex items-center justify-between px-4 py-3" style={{ borderTop: "1px solid #1A1A24", background: "#0F0F16" }}>
                 <span className="text-xs" style={{ color: "#4A4A5E" }}>{filtered.length} / {total} sipariş gösteriliyor</span>
