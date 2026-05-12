@@ -35,8 +35,8 @@ class DashboardService:
             latest_orders.append({
                 "id": f"#{str(o['_id'])[-4:].upper()}",
                 "customer": customer["name"] if customer else o.get("customer_name", "Bilinmiyor"),
-                "product": o.get("items", [{"product_name": "Urun"}])[0].get("product_name", "Urun") if o.get("items") else "Urun",
-                "amount": f"₺{o.get('total_amount', 0)}",
+                "product": o.get("product", "Bilinmiyor"),
+                "amount": f"₺{o.get('amount', 0)}",
                 "status": o.get("cargo_status", "processing"),
                 "sentiment": customer.get("sentiment", "neutral") if customer else "neutral"
             })
