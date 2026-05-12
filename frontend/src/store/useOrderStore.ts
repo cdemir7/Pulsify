@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import type { Order } from "../types/api.types";
 import { getOrders, updateOrder, deleteOrder } from "../api/orders";
+import { toast } from "../components/common/Toast";
 
 interface OrderStore {
   orders: Order[];
@@ -31,11 +32,11 @@ export const useOrderStore = create<OrderStore>((set, get) => ({
   updateOrder: async (id: string, data: Partial<Order>) => {
     try {
       const updated = await updateOrder(id, data);
-      set({
-        orders: get().orders.map((o) => (o.id === id ? updated : o)),
-      });
+      set({ orders: get().orders.map((o) => (o.id === id ? updated : o)) });
+      toast("Sipariş güncellendi", "success");
     } catch {
       set({ error: "Sipariş güncellenemedi" });
+      toast("Sipariş güncellenemedi", "error");
     }
   },
 
@@ -43,8 +44,10 @@ export const useOrderStore = create<OrderStore>((set, get) => ({
     try {
       await deleteOrder(id);
       set({ orders: get().orders.filter((o) => o.id !== id) });
+      toast("Sipariş silindi", "success");
     } catch {
       set({ error: "Sipariş silinemedi" });
+      toast("Sipariş silinemedi", "error");
     }
   },
 }));

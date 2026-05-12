@@ -3,6 +3,22 @@ import { useNavigate } from "react-router-dom";
 import Sidebar from './Sidebar'
 import { cargoApi } from '../api';
 
+const TRIAGE_CACHE_KEY = "pulsify_cargo_triage";
+
+function loadTriageCache(): { list: any[]; timestamp: string } | null {
+  try {
+    const raw = localStorage.getItem(TRIAGE_CACHE_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch { return null; }
+}
+
+function formatTs(iso: string): string {
+  const diff = Math.floor((Date.now() - new Date(iso).getTime()) / 60000);
+  if (diff < 1) return "Az önce";
+  if (diff < 60) return `${diff} dk önce`;
+  return `${Math.floor(diff / 60)} saat önce`;
+}
+
 interface CargoOrder {
   id: string;
   order_code: string;
@@ -32,13 +48,16 @@ export default function Cargo() {
   const [notifiedList, setNotifiedList] = useState<string[]>([]);
   const [aiDismissed, setAiDismissed] = useState(false);
   const [allNotified, setAllNotified] = useState(false);
-  const [aiTriageList, setAiTriageList] = useState<any[]>([]);
+  const [triageCache, setTriageCache] = useState<{ list: any[]; timestamp: string } | null>(null);
   const [aiLoading, setAiLoading] = useState(false);
 
   const [ceoInsight, setCeoInsight] = useState<string | null>(null);
   const [insightLoading, setInsightLoading] = useState(false);
 
   useEffect(() => {
+    // Cache'i yükle
+    setTriageCache(loadTriageCache());
+
     const fetchData = async () => {
       try {
         setLoading(true);
@@ -85,10 +104,12 @@ export default function Cargo() {
     try {
       setAiLoading(true);
       const res = await cargoApi.getAiTriage();
-      setAiTriageList(res.data?.data ?? []);
+      const list = res.data?.data ?? [];
+      const entry = { list, timestamp: new Date().toISOString() };
+      localStorage.setItem(TRIAGE_CACHE_KEY, JSON.stringify(entry));
+      setTriageCache(entry);
     } catch (err) {
       console.error("AI Triage başarısız:", err);
-      alert("AI optimizasyonu çalıştırılamadı.");
     } finally {
       setAiLoading(false);
     }
@@ -252,38 +273,43 @@ export default function Cargo() {
                 </table>
               </div>
 
-              {/* AI Card */}
+              {/* AI Triage Card */}
               {!aiDismissed && (
                 <div className="rounded-xl overflow-hidden" style={{ background: "#0F0F1A", border: "1px solid rgba(99,102,241,0.25)" }}>
                   <div className="flex items-center gap-2.5 px-5 py-3.5" style={{ borderBottom: "1px solid rgba(99,102,241,0.15)" }}>
                     <span className="text-indigo-400 text-base">🤖</span>
                     <span className="text-[13px] font-semibold text-indigo-400 flex-1">AI Kargo Triyaj Optimizasyonu</span>
-                    {!aiTriageList.length && (
-                      <button onClick={handleRunAiTriage} disabled={aiLoading} className="text-[11px] bg-indigo-500/20 text-indigo-300 px-3 py-1 rounded-md cursor-pointer hover:bg-indigo-500/30 transition-colors">
-                        {aiLoading ? "Hesaplanıyor..." : "Şimdi Çalıştır"}
-                      </button>
-                    )}
+                    <button
+                      onClick={handleRunAiTriage}
+                      disabled={aiLoading}
+                      className="text-[11px] bg-indigo-500/20 text-indigo-300 px-3 py-1 rounded-md cursor-pointer hover:bg-indigo-500/30 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {aiLoading ? "Hesaplanıyor..." : triageCache ? "↺ Yenile" : "Şimdi Çalıştır"}
+                    </button>
                   </div>
                   <div className="px-5 py-4">
-                    {!aiTriageList.length ? (
-                      <p className="text-[13px] leading-relaxed mb-4" style={{ color: "#C4C4D4" }}>
-                        Kuş uçuşu mesafe, müşteri duygu durumu ve gecikme süresine göre kargo sırasını optimize etmek için <strong className="text-white">AI Triyaj</strong> sistemini çalıştırın.
-                      </p>
-                    ) : (
+                    {aiLoading ? (
+                      <div className="flex flex-col gap-2 animate-pulse">
+                        {[1,2,3].map(i => (
+                          <div key={i} className="h-16 rounded-lg" style={{ background: "rgba(99,102,241,0.08)" }} />
+                        ))}
+                      </div>
+                    ) : triageCache ? (
                       <div className="flex flex-col gap-3">
-                        <p className="text-[12px] text-indigo-300 mb-1">
-                          ✓ Haversine formülü ile mesafeler hesaplandı ve öncelikler yeniden belirlendi.
-                        </p>
+                        <div className="flex items-center justify-between mb-1">
+                          <p className="text-[12px] text-indigo-300">
+                            ✓ Haversine formülü ile mesafeler hesaplandı ve öncelikler belirlendi.
+                          </p>
+                          <span className="text-[10px] shrink-0 ml-3" style={{ color: "#4A4A5E" }}>
+                            {formatTs(triageCache.timestamp)}
+                          </span>
+                        </div>
                         <div className="flex flex-col gap-3 pr-2 overflow-y-auto" style={{ maxHeight: "300px" }}>
-                          {aiTriageList.map((item, index) => (
+                          {triageCache.list.map((item, index) => (
                             <div key={item.id} className="flex flex-col gap-1.5 p-3 rounded-lg shrink-0" style={{ background: "rgba(99,102,241,0.05)", border: "1px solid rgba(99,102,241,0.1)" }}>
                               <div className="flex justify-between items-center">
-                                <span className="text-[13px] font-bold text-white">
-                                  {index + 1}. {item.customer_name}
-                                </span>
-                                <span className="text-[11px] font-bold px-2 py-0.5 rounded bg-indigo-500/20 text-indigo-300">
-                                  Skor: {item.ai_score}
-                                </span>
+                                <span className="text-[13px] font-bold text-white">{index + 1}. {item.customer_name}</span>
+                                <span className="text-[11px] font-bold px-2 py-0.5 rounded bg-indigo-500/20 text-indigo-300">Skor: {item.ai_score}</span>
                               </div>
                               <span className="text-[12px]" style={{ color: "#8B8B9E" }}>
                                 <strong>Neden:</strong> {item.ai_reason}
@@ -296,6 +322,10 @@ export default function Cargo() {
                           ))}
                         </div>
                       </div>
+                    ) : (
+                      <p className="text-[13px] leading-relaxed" style={{ color: "#C4C4D4" }}>
+                        Kuş uçuşu mesafe, müşteri duygu durumu ve gecikme süresine göre kargo sırasını optimize etmek için <strong className="text-white">AI Triyaj</strong> sistemini çalıştırın.
+                      </p>
                     )}
                   </div>
                 </div>
