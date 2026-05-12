@@ -58,13 +58,13 @@
 
 | Faz | Durum | İlerleme |
 |---|---|---|
-| Faz 0: Altyapı | ✅ Tamamlandı | 9/9 |
-| Faz 1: Backend Temeli | ✅ Tamamlandı | 20/20 |
-| Faz 2: Frontend Temeli | 🟡 Kısmi (UI sayfaları var) | 4/14 |
-| Faz 3: Core Features | ✅ Tamamlandı | 17/17 |
-| Faz 4: AI Özellikleri | ⬜ Başlamadı | 0/12 |
-| Faz 5: Polish & Deploy | ⬜ Başlamadı | 0/10 |
-| Faz 6: v2.0 | 🔒 MVP sonrası | — |
+| Faz 0: Altyapı         | ✅ Tamamlandı  | 9/9  |
+| Faz 1: Backend Temeli  | ✅ Tamamlandı  | 12/12 |
+| Faz 2: Frontend Temeli | ✅ Tamamlandı  | 14/14 |
+| Faz 3: Core Features   | ✅ Tamamlandı  | 15/15 |
+| Faz 4: AI Özellikleri  | ✅ Tamamlandı  | 12/12 |
+| Faz 5: Polish & Deploy | ⬜ Başlamadı   | 0/10  |
+| Faz 6: v2.0            | 🔒 MVP sonrası | —     |
 
 **Legend:** ⬜ Başlamadı · ⏳ Devam ediyor · 🟡 Kısmi · ✅ Tamamlandı · 🔒 Kilitli
 
@@ -199,27 +199,27 @@
 > **Referans:** CLAUDE.md §7
 
 ### Adım 4.1 — AI Service Layer
-- [ ] `AIService.analyze_sentiment()` — JSON parse hatalarına dayanıklı
-- [ ] `AIService.classify_intent()` — order_query, cargo_query, complaint, other
-- [ ] `AIService.generate_daily_report()` — Türkçe rapor üretimi
-- [ ] Response cache mekanizması (aynı gün tekrar üretme)
-- [ ] Exponential backoff retry (rate limit önlemi)
+- [x] `AIService.analyze_sentiment()` — JSON parse hatalarına dayanıklı
+- [x] `AIService.classify_intent()` — order_query, cargo_query, complaint, other
+- [x] `AIService.generate_daily_report()` — Türkçe rapor üretimi
+- [x] Response cache mekanizması (aynı gün tekrar üretme)
+- [x] Exponential backoff retry (rate limit önlemi)
 
 ### Adım 4.2 — AI Endpoint'leri
-- [ ] `POST /api/ai/sentiment`
-- [ ] `POST /api/ai/chat` — intent classify + DB sorgu + Türkçe yanıt
-- [ ] `POST /api/ai/report/daily`
-- [ ] `POST /api/ai/loyalty/:id`
-- [ ] `POST /api/ai/cargo-alerts`
+- [x] `POST /api/ai/sentiment`
+- [x] `POST /api/ai/chat` — intent classify + DB sorgu + Türkçe yanıt
+- [x] `POST /api/ai/report/daily`
+- [x] `POST /api/ai/loyalty/:id`
+- [x] `POST /api/ai/cargo-alerts`
 
 ### Adım 4.3 — Chatbot Frontend
-- [ ] `Chatbot.tsx` — mesaj listesi, input, gönderim
-- [ ] Loading/typing indikatörü
-- [ ] `useAI` hook — API call yönetimi
+- [x] `Chatbot.tsx` — mesaj listesi, input, gönderim
+- [x] Loading/typing indikatörü
+- [x] `useAI` hook — API call yönetimi
 
 ### Adım 4.4 — Otomatik AI Raporları
-- [ ] `ai_reports` collection'a yazma
-- [ ] Dashboard'da günün özet raporu kartı
+- [x] `ai_reports` collection'a yazma
+- [x] Dashboard'da günün özet raporu kartı
 
 ---
 
@@ -303,11 +303,11 @@
 
 | Risk | Önlem | Durum |
 |---|---|---|
-| Gemini rate limit | Exponential backoff + cache | ⬜ Henüz uygulanmadı |
+| Gemini rate limit | Exponential backoff + cache | ✅ Uygulandı |
 | MongoDB free tier dolması | Veri arşivleme rutini | ⬜ Henüz tasarlanmadı |
-| CORS prod hataları | Whitelist env'den | ⬜ Henüz uygulanmadı |
-| Türkçe NLP kalitesi | Prompt iterasyonu + test seti | ⬜ Henüz başlamadı |
-| FE/BE type sync hatası | TypeScript tipleri ortak şema | ⬜ Henüz tasarlanmadı |
+| CORS prod hataları | Whitelist env'den | 🟡 Local'de çalışıyor |
+| Türkçe NLP kalitesi | Prompt iterasyonu + test seti |  ✅ Test edildi, çalışıyor |
+| FE/BE type sync hatası | TypeScript tipleri ortak şema | ✅ api.types.ts oluşturuldu |
 | Secret sızıntısı | `.gitignore` + secret scanning | 🟡 `.gitignore` var, scanning yok |
 | Render cold start | Ping servisi veya ücretli plan | 🔒 Deploy sonrası |
 
@@ -342,6 +342,8 @@
 | 2026-05-11 | fbd44a9 | Gemini AI entegrasyonu tamamlandı | Türkçe chatbot, duygu analizi, günlük rapor çalışıyor |
 | 2026-05-11 | 8a282ee | Adım 3.2 tamamlandı — Customers Modülü | Customer model, servis, router, frontend API bağlantısı ve detay modal |
 | 2026-05-12 | `e17dfc1` | Adım 3.3 ve 3.4 tamamlandı | Kargo Modülü, CEO Insight AI Özeti ve Canlı Dashboard veritabanına bağlandı. Faz 3 tamamen bitti. |
+| 2026-05-12 | be4c44f | Faz 4 tamamlandı — AI Özellikleri | AI cache, loyalty, cargo-alerts endpoint'leri, Chatbot useAI hook, frontend entegrasyonu |
+| 2026-05-12 | — | Dashboard servis düzeltmesi | product/amount field isimleri düzeltildi, gerçek veri gösteriliyor |
 
 ---
 
