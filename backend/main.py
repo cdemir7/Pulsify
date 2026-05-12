@@ -39,12 +39,12 @@ def create_app() -> FastAPI:
         logger.error(f"Unhandled exception: {exc}", exc_info=True)
         return error("INTERNAL_ERROR", "Sunucu hatasi olustu", status=500)
 
-    # Routers buraya eklenecek (Adım 1.5+)
-    from app.routers import orders, customers, ai
+    from app.routers import orders, customers, cargo, ai, dashboard
     app.include_router(orders.router, prefix="/api/orders", tags=["orders"])
     app.include_router(customers.router, prefix="/api/customers", tags=["customers"])
-    # app.include_router(cargo.router, prefix="/api/cargo", tags=["cargo"])
+    app.include_router(cargo.router, prefix="/api/cargo", tags=["cargo"])
     app.include_router(ai.router, prefix="/api/ai", tags=["ai"])
+    app.include_router(dashboard.router, prefix="/api/dashboard", tags=["dashboard"])
 
     @app.get("/", tags=["health"])
     async def root():

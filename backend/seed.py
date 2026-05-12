@@ -1,9 +1,16 @@
 import asyncio
+import os
+import sys
+from pathlib import Path
 from motor.motor_asyncio import AsyncIOMotorClient
 from datetime import datetime, timedelta
-import random
- 
-MONGO_URI = "mongodb://localhost:27017/pulsify"
+
+from dotenv import load_dotenv
+load_dotenv(dotenv_path=Path(__file__).parent / ".env")
+
+MONGO_URI = os.getenv("MONGO_URI", "mongodb://localhost:27017/pulsify")
+if "localhost" not in MONGO_URI and "/pulsify" not in MONGO_URI:
+    MONGO_URI = MONGO_URI.replace("mongodb.net/", "mongodb.net/pulsify?").replace("??", "?")
  
 customers_data = [
     {
@@ -185,6 +192,32 @@ orders_data = [
         "updated_at": datetime.utcnow(),
         "estimated_delivery": datetime.utcnow() + timedelta(days=3),
     },
+    {
+        "order_code": "ORD-2026-1241",
+        "customer_name": "Ahmet Yılmaz",
+        "product": "Ürün C",
+        "amount": 920.0,
+        "status": "shipped",
+        "cargo_status": "in_transit",
+        "cargo_company": "MNG Kargo",
+        "tracking_number": "TRK112233",
+        "created_at": datetime.utcnow() - timedelta(days=20),
+        "updated_at": datetime.utcnow() - timedelta(days=15),
+        "estimated_delivery": datetime.utcnow() - timedelta(days=15),
+    },
+    {
+        "order_code": "ORD-2026-1242",
+        "customer_name": "Fatma Kaya",
+        "product": "Ürün D",
+        "amount": 165.0,
+        "status": "delayed",
+        "cargo_status": "delayed",
+        "cargo_company": "Aras Kargo",
+        "tracking_number": "TRK445566",
+        "created_at": datetime.utcnow() - timedelta(days=12),
+        "updated_at": datetime.utcnow() - timedelta(days=8),
+        "estimated_delivery": datetime.utcnow() - timedelta(days=8),
+    },
 ]
  
 products_data = [
@@ -212,14 +245,29 @@ async def seed():
     result = await db["customers"].insert_many(customers_data)
     print(f"✅ {len(result.inserted_ids)} müşteri eklendi")
  
-    # Customer ID'lerini siparişlere ekle
     customers = await db["customers"].find({}).to_list(length=100)
     customer_map = {c["name"]: str(c["_id"]) for c in customers}
- 
+
+    import random
+    import json
+    import os
+
+    cities = ["İstanbul", "Ankara", "İzmir"] # Fallback
+    try:
+        file_path = os.path.join(os.path.dirname(__file__), "app", "utils", "tr.json")
+        with open(file_path, "r", encoding="utf-8") as f:
+            data = json.load(f)
+            cities = list(set([item.get("admin_name", item["city"]) for item in data]))
+    except Exception as e:
+        print(f"Uyarı: tr.json okunamadı, varsayılan iller kullanılacak. Hata: {e}")
+
     for order in orders_data:
         customer_name = order["customer_name"]
         if customer_name in customer_map:
             order["customer_id"] = customer_map[customer_name]
+        order["telegram_chat_id"] = "6884179472"
+        if "delivery_city" not in order:
+            order["delivery_city"] = random.choice(cities)
  
     # Siparişleri ekle
     result = await db["orders"].insert_many(orders_data)
