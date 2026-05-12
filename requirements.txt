@@ -22,7 +22,9 @@ pydantic-settings==2.9.1
 # AI — Google Gemini
 google-generativeai==0.8.5
 
-# Rate Limiting (Güvenlik — CLAUDE.md §9)
+# Security & Auth
+PyJWT==2.10.1
+bcrypt==4.2.1
 slowapi==0.1.9
 
 # Async HTTP Client
