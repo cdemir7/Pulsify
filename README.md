@@ -30,6 +30,7 @@ Türkçe doğal dil işleme (NLP) ile güçlendirilmiş AI asistanı sayesinde; 
 
 Proje Tanıtım Videosu: 
 
+Proje Sunumu: [![Sunumu İndir](https://img.shields.io/badge/Sunum-PDF_İndir-red?style=for-the-badge&logo=adobe-acrobat-reader&logoColor=white)](docs/Pulsify.pdf)
 ---
 
 ## Özellikler
@@ -51,11 +52,11 @@ Projenin arayüzüne ve çalışma mantığına dair görselleri aşağıda bula
 
 | Dashboard | Sipariş Yönetimi |
 | :---: | :---: |
-| ![Dashboard](screenshots/dashboard.png) | ![Sipariş Yönetimi](screenshots/siparisler.png) |
+| ![Dashboard](docs/screenshots/dashboard.png) | ![Sipariş Yönetimi](docs/screenshots/siparisler.png) |
 
 | AI Chatbot | Kargo Takibi |
 | :---: | :---: |
-| ![AI Chatbot](screenshots/ai-asistan.png) | ![Kargo Takibi](screenshots/kargo.png) |
+| ![AI Chatbot](docs/screenshots/ai-asistan.png) | ![Kargo Takibi](docs/screenshots/kargo.png) |
 
 ---
 
