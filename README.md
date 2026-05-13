@@ -85,27 +85,11 @@ Projenin arayüzüne ve çalışma mantığına dair görselleri aşağıda bula
 
 ## Teknoloji Stack'i
 
-### Backend
-- **[FastAPI](https://fastapi.tiangolo.com)** — Async-native, otomatik Swagger UI, Pydantic entegrasyonu
-- **[Motor](https://motor.readthedocs.io)** — Async MongoDB driver (PyMongo değil)
-- **[Pydantic v2](https://docs.pydantic.dev)** — Tip güvenli veri doğrulama
-- **[Google Generative AI](https://ai.google.dev)** — Gemini 2.5-flash, Türkçe NLP
-- **[SlowAPI](https://slowapi.readthedocs.io)** — Rate limiting
-- **[Uvicorn](https://www.uvicorn.org)** — ASGI server
-
-### Frontend
-- **[React 18](https://react.dev)** — Component tabanlı UI
-- **[TypeScript 5.6](https://typescriptlang.org)** — Tip güvenliği
-- **[Vite](https://vitejs.dev)** — Hızlı build tool
-- **[TailwindCSS](https://tailwindcss.com)** — Utility-first CSS
-- **[Zustand](https://zustand-demo.pmnd.rs)** — Minimal state yönetimi
-- **[React Router v6](https://reactrouter.com)** — Client-side routing
-- **[Axios](https://axios-http.com)** — HTTP client
-
-### Altyapı
-- **[MongoDB Atlas](https://www.mongodb.com/atlas)** — Yönetilen cloud veritabanı
-- **[Render](https://render.com)** — Backend hosting
-- **[Vercel](https://vercel.com)** — Frontend hosting & CDN
+| Alan | Kullanılan Teknolojiler |
+| :--- | :--- |
+| **Backend** | Python, FastAPI, Uvicorn, Motor, Pydantic v2, Google Generative AI, SlowAPI,  |
+| **Frontend** | React 18, TypeScript 5.6, Vite, TailwindCSS, Zustand, React Router v6, Axios |
+| **Altyapı** | MongoDB Atlas, Render, Vercel |
 
 ---
 
