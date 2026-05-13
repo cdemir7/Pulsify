@@ -28,6 +28,8 @@
 
 Türkçe doğal dil işleme (NLP) ile güçlendirilmiş AI asistanı sayesinde; sipariş durumu sorgulama, kargo gecikmelerini tespit etme, müşteri memnuniyetini analiz etme ve günlük operasyon raporu üretme işlemleri otomatik olarak gerçekleşir.
 
+Proje Tanıtım Videosu: 
+
 ---
 
 ## Özellikler
@@ -45,31 +47,15 @@ Türkçe doğal dil işleme (NLP) ile güçlendirilmiş AI asistanı sayesinde; 
 
 ## Ekran Görüntüleri
 
-<!-- TODO: Aşağıdaki görsel alanları, uygulama hazır olduğunda doldurulacak -->
+Projenin arayüzüne ve çalışma mantığına dair görselleri aşağıda bulabilirsiniz:
 
-### Dashboard
-<!-- <img src="docs/assets/screenshot-dashboard.png" alt="Dashboard" width="100%" /> -->
-```
-[ Dashboard ekran görüntüsü eklenecek ]
-```
+| Dashboard | Sipariş Yönetimi |
+| :---: | :---: |
+| ![Dashboard](screenshots/dashboard.png) | ![Sipariş Yönetimi](screenshots/siparisler.png) |
 
-### Sipariş Yönetimi
-<!-- <img src="docs/assets/screenshot-orders.png" alt="Sipariş Yönetimi" width="100%" /> -->
-```
-[ Sipariş listesi ekran görüntüsü eklenecek ]
-```
-
-### AI Chatbot
-<!-- <img src="docs/assets/screenshot-chatbot.png" alt="AI Chatbot" width="100%" /> -->
-```
-[ Chatbot ekran görüntüsü eklenecek ]
-```
-
-### Kargo Takibi
-<!-- <img src="docs/assets/screenshot-cargo.png" alt="Kargo Takibi" width="100%" /> -->
-```
-[ Kargo takip ekran görüntüsü eklenecek ]
-```
+| AI Chatbot | Kargo Takibi |
+| :---: | :---: |
+| ![AI Chatbot](screenshots/ai-asistan.png) | ![Kargo Takibi](screenshots/kargo.png) |
 
 ---
 
