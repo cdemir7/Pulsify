@@ -28,9 +28,10 @@
 
 Türkçe doğal dil işleme (NLP) ile güçlendirilmiş AI asistanı sayesinde; sipariş durumu sorgulama, kargo gecikmelerini tespit etme, müşteri memnuniyetini analiz etme ve günlük operasyon raporu üretme işlemleri otomatik olarak gerçekleşir.
 
-Proje Tanıtım Videosu: 
+### Proje Tanıtım Videosu: https://youtu.be/aXu3FrLa9jc
 
-Proje Sunumu: [![Sunumu İndir](https://img.shields.io/badge/Sunum-PDF_İndir-red?style=for-the-badge&logo=adobe-acrobat-reader&logoColor=white)](docs/Pulsify.pdf)
+### Proje Sunumu: [![Sunumu İndir](https://img.shields.io/badge/Sunum-PDF_İndir-red?style=for-the-badge&logo=adobe-acrobat-reader&logoColor=white)](docs/Pulsify.pdf)
+
 ---
 
 ## Özellikler
