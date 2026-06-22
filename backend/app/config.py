@@ -12,6 +12,9 @@ class Settings(BaseSettings):
     
     TELEGRAM_BOT_TOKEN: str = ""
     TELEGRAM_CHAT_ID: str = ""
+    
+    ADMIN_USERNAME: str = "admin@pulsify.com"
+    ADMIN_PASSWORD: str = "admin123"
 
     @property
     def cors_origins_list(self) -> list[str]:

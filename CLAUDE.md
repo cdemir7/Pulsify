@@ -602,6 +602,10 @@ Log seviyeleri:
 - **CORS** sadece izinli origin'lere açık olmalı (production'da wildcard `*` yasak)
 - **Input validation** her endpoint'te zorunlu (Pydantic modelleri ile — FastAPI'de otomatik)
 - **MongoDB injection** önlemi: parametrik sorgular kullan, string concat etme
+- **Authentication**: JWT (JSON Web Token) tabanlı oturum yönetimi.
+- **Password Hashing**: Şifreler veritabanında her zaman **bcrypt** ile hash'lenmiş olarak tutulmalı.
+- **Route Guarding**: Frontend'de korumalı rotalar (`ProtectedRoute`) ve backend'de JWT doğrulama katmanı zorunludur.
+- **Token Storage**: JWT token'lar frontend'de Zustand store üzerinden yönetilmeli ve tarayıcı hafızasında saklanmalı.
 
 ### `.gitignore` — Mutlaka Olması Gerekenler
 ```

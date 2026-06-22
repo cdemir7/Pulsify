@@ -277,9 +277,24 @@ async def seed():
     result = await db["products"].insert_many(products_data)
     print(f"✅ {len(result.inserted_ids)} ürün eklendi")
  
+    # Admin Kullanıcı ekle
+    await db["users"].delete_many({})
+    import bcrypt
+    
+    password = "admin123".encode('utf-8')
+    salt = bcrypt.gensalt()
+    hashed_password = bcrypt.hashpw(password, salt).decode('utf-8')
+    
+    await db["users"].insert_one({
+        "username": "admin@pulsify.com",
+        "password": hashed_password,
+        "role": "admin",
+        "created_at": datetime.utcnow()
+    })
+    print("✅ Admin kullanıcısı (admin@pulsify.com / admin123) eklendi")
+
     print("\n🎉 Seed data başarıyla yüklendi!")
     client.close()
- 
  
 if __name__ == "__main__":
     asyncio.run(seed())

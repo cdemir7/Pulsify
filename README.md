@@ -249,6 +249,25 @@ Detaylı geliştirme kılavuzu için [CLAUDE.md](CLAUDE.md) dosyasına bak.
 
 <!-- LICENSE BÖLÜMÜ DAHA SONRA EKLENECEK -->
 
+## Test Giriş Bilgileri
+
+Uygulamayı test etmek için aşağıdaki yönetici bilgilerini kullanabilirsiniz:
+
+*   **E-Posta:** `admin@pulsify.com`
+*   **Şifre:** `admin123`
+
+---
+
+## Değişiklik Geçmişi
+
+| Tarih | Versiyon | Değişiklik | Not |
+|---|---|---|---|
+| 2026-05-12 | v1.2.0 | **Auth & Login** | JWT, Bcrypt, Premium Login UI |
+| 2026-05-12 | v1.1.0 | **AI Core** | Chatbot, Sentiment, CEO Insight |
+| 2026-05-11 | v1.0.0 | **Core MVP** | Orders, Customers, Cargo, Dashboard |
+
+---
+
 <div align="center">
 
 Pulsify — KOBİ'lerin AI ile büyümesi için

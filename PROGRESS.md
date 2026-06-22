@@ -344,6 +344,7 @@
 | 2026-05-12 | `e17dfc1` | Adım 3.3 ve 3.4 tamamlandı | Kargo Modülü, CEO Insight AI Özeti ve Canlı Dashboard veritabanına bağlandı. Faz 3 tamamen bitti. |
 | 2026-05-12 | be4c44f | Faz 4 tamamlandı — AI Özellikleri | AI cache, loyalty, cargo-alerts endpoint'leri, Chatbot useAI hook, frontend entegrasyonu |
 | 2026-05-12 | — | Dashboard servis düzeltmesi | product/amount field isimleri düzeltildi, gerçek veri gösteriliyor |
+| 2026-05-12 | `30ba8a9` | Adım 5.3 Başlatıldı — Auth & Login | JWT tabanlı giriş sistemi, bcrypt şifreleme ve Premium UI tamamlandı |
 
 ---
 
